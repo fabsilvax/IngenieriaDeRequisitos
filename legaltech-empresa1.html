@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tablero Legal Tech Empresa 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra lateral con secciones; un selector global de NRC cambia fechas y mercado; la sección Avances escribe en la carpeta NuestrosAvances vía servidor local */
+:root{
+  color-scheme:light;
+  --bg:#F1F3F5; --surface:#FFFFFF; --surface2:#E7EBEF; --fg:#111B26; --muted:#556373; --line:#D3DAE1;
+  --accent:#9B1C3A; --accent-ink:#FFFFFF; --accent-soft:#F6E4E9;
+  --ra:#0E7C7B; --rb:#A35F00; --rc:#4B4FC2; --badge-ink:#FFFFFF;
+  --good:#1E7F4F; --warn:#A35F00; --bad:#C0262D;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1620; --surface:#17212D; --surface2:#1F2B39; --fg:#E7EDF3; --muted:#98A6B5; --line:#2C3947;
+  --accent:#E0607F; --accent-ink:#1A0509; --accent-soft:#3A1B25;
+  --ra:#3CC4C2; --rb:#E3A04A; --rc:#9A9EF7; --badge-ink:#0B1118; --good:#4CC58A; --warn:#E3A04A; --bad:#F0707A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1620; --surface:#17212D; --surface2:#1F2B39; --fg:#E7EDF3; --muted:#98A6B5; --line:#2C3947;
+  --accent:#E0607F; --accent-ink:#1A0509; --accent-soft:#3A1B25;
+  --ra:#3CC4C2; --rb:#E3A04A; --rc:#9A9EF7; --badge-ink:#0B1118; --good:#4CC58A; --warn:#E3A04A; --bad:#F0707A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--f-body);padding-inline:16px;padding-block:0 64px;margin:0}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.8rem,4.2vw,2.8rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.08rem;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.eyebrow{font:500 .72rem var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)} .small{font-size:.85rem} .mono{font-family:var(--f-mono)}
+ul,ol{margin:8px 0 0;padding-left:1.15rem}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin-inline:-16px;padding:10px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand{font:700 1rem var(--f-display);display:flex;gap:8px;align-items:center;margin-right:auto}
+.brand i{display:inline-block;width:12px;height:12px;background:var(--accent);border-radius:2px;transform:rotate(45deg)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);flex-wrap:wrap}
+.seg button{border:0;background:none;padding:6px 12px;font-size:.85rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:.85rem}
+.pill{font:500 .75rem var(--f-mono);padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);display:inline-flex;gap:6px;align-items:center}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.pill.on i{background:var(--good)} .pill.on{border-color:var(--good)}
+.shell{max-width:1260px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px;padding-top:20px}
+nav.side{position:sticky;top:calc(64px + env(safe-area-inset-top,0px));align-self:start;display:flex;flex-direction:column;gap:2px}
+nav.side a{padding:7px 10px;border-radius:6px;text-decoration:none;color:var(--muted);font-size:.9rem;border-left:2px solid transparent}
+nav.side a:hover{background:var(--surface2);color:var(--fg)}
+nav.side a.on{color:var(--fg);border-left-color:var(--accent);background:var(--surface2);font-weight:500}
+nav.side .prog{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+main{min-width:0;display:flex;flex-direction:column;gap:56px}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:16px}
+  nav.side{position:static;flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:6px}
+  nav.side a{white-space:nowrap;border-left:0;border-bottom:2px solid transparent;border-radius:6px 6px 0 0}
+  nav.side a.on{border-bottom-color:var(--accent)}
+  nav.side .prog{display:none}
+}
+section{scroll-margin-top:90px;min-width:0}
+.sec-head{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;max-width:72ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.grid.w3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tag{display:inline-block;font:500 .7rem var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;border:1px solid var(--line);color:var(--muted);background:var(--surface2)}
+.tag.esp{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.tag.gen{color:var(--ra);border-color:var(--ra);background:transparent}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:.85rem}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.scroll-x{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:500 .72rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.callout{border:1px dashed var(--warn);border-radius:8px;padding:10px 12px;font-size:.88rem;background:var(--surface)}
+.callout b{color:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;padding:6px 10px;border-bottom:2px solid transparent;color:var(--muted);margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:500}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:7px 14px;font-weight:500}
+.btn.ghost{background:none;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+textarea,input[type=text],select.fld{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+textarea{min-height:90px;resize:vertical}
+.badge{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font:600 .72rem var(--f-mono);color:var(--badge-ink)}
+.badge.A{background:var(--ra)} .badge.B{background:var(--rb)} .badge.C{background:var(--rc)}
+details>summary{cursor:pointer;font-weight:500}
+
+/* panorama */
+.cds{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.cd{display:flex;flex-direction:column;gap:6px}
+.cd .n{font:700 2.6rem/1 var(--f-display)}
+.cd.warn .n{color:var(--warn)} .cd.bad .n{color:var(--bad)}
+.next{display:flex;flex-direction:column;gap:8px}
+.next .it{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+
+/* avances */
+.kan{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:980px){.kan{grid-template-columns:minmax(0,1fr)}}
+.kcol{background:var(--surface2);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.kcol>header{display:flex;justify-content:space-between;align-items:center;padding:2px 4px}
+.acard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.acard h4{margin:0;font:600 .95rem var(--f-body);overflow-wrap:anywhere}
+.acard .acts{display:flex;gap:6px;flex-wrap:wrap}
+.acard .acts button,.acard .acts a{font-size:.78rem;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 8px;text-decoration:none;color:var(--fg)}
+.acard .acts .del[data-armed="1"]{background:var(--bad);color:#fff;border-color:var(--bad)}
+.acard pre{margin:0;white-space:pre-wrap;font:.82rem/1.5 var(--f-body);overflow-wrap:anywhere}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:18px;text-align:center;background:var(--surface);color:var(--muted)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.flist{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:.85rem;text-align:left}
+.path{font:.8rem var(--f-mono);background:var(--surface2);border-radius:6px;padding:6px 8px;overflow-wrap:anywhere}
+.msg{font-size:.88rem;min-height:1.3em}
+.msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
+
+/* plan */
+.phase{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.phase>header{display:flex;gap:12px;align-items:center;padding:12px 14px;flex-wrap:wrap}
+.phase>header .bar{flex:1 1 120px;max-width:200px}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:start}
+.task.done .t{text-decoration:line-through;color:var(--muted)}
+.task input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px}
+.task .who{display:flex;gap:4px;margin-top:4px;align-items:center;flex-wrap:wrap}
+.due{font:500 .72rem var(--f-mono);padding:2px 7px;border-radius:4px;border:1px solid var(--line);white-space:nowrap}
+.due.bad{color:var(--bad);border-color:var(--bad)} .due.warn{color:var(--warn);border-color:var(--warn)} .due.ok{color:var(--good);border-color:var(--good)}
+.mini{font-size:.78rem;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 8px}
+.rolecards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.role{border-top:4px solid var(--rc);padding-top:12px}
+.role.A{border-top-color:var(--ra)} .role.B{border-top-color:var(--rb)} .role.C{border-top-color:var(--rc)}
+.ring{--p:0;width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface2) 0);display:grid;place-items:center}
+.ring span{width:74px;height:74px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font:700 1.25rem var(--f-display)}
+.rub select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 4px}
+.score{font:700 2rem var(--f-display)}
+
+/* proyecto */
+.tl{display:flex;overflow-x:auto;padding-bottom:6px}
+.tl button{flex:1 0 190px;text-align:left;border:0;border-top:3px solid var(--line);background:none;padding:12px 12px 0 0}
+.tl button[aria-pressed="true"]{border-top-color:var(--accent)}
+.tl .yr{font:500 .75rem var(--f-mono);color:var(--muted)}
+.tools{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
+.tool{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);display:flex;flex-direction:column;gap:4px;text-align:left}
+.tool:hover{border-color:var(--accent)} .tool.sel{outline:2px solid var(--accent)}
+.sys{display:grid;gap:10px;grid-template-columns:1fr 20px 1.4fr 20px 1fr;align-items:stretch}
+.sys .arrow{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1.3rem}
+.sys .col{display:flex;flex-direction:column;gap:8px}
+.node{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px;text-align:left}
+.node:hover,.node[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.env{grid-column:1/-1;border:1px dashed var(--muted);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.fb{grid-column:1/-1;text-align:center;font:500 .8rem var(--f-mono);color:var(--muted);border-top:1px dashed var(--muted);padding-top:8px}
+@media (max-width:760px){.sys{grid-template-columns:1fr}.sys .arrow{transform:rotate(90deg);height:20px}}
+.flow{display:flex;overflow-x:auto;padding-bottom:8px}
+.step{flex:1 0 150px;padding:12px 18px 12px 14px;background:var(--surface);border:1px solid var(--line);border-left:0;text-align:left;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)}
+.step:first-child{border-left:1px solid var(--line)}
+.step[aria-pressed="true"]{background:var(--accent-soft)}
+.mx input[type=range]{width:100%;accent-color:var(--accent)}
+.mx select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 4px}
+.rank{display:grid;grid-template-columns:minmax(90px,150px) 1fr 44px;gap:10px;align-items:center;font-size:.9rem}
+.rank .bar{height:14px} .rank.top .bar>i{background:var(--good)}
+.hl-vago{background:color-mix(in srgb,var(--warn) 30%,transparent);border-radius:3px;padding:0 2px}
+.hl-abs{background:color-mix(in srgb,var(--bad) 28%,transparent);border-radius:3px;padding:0 2px}
+.out{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-height:44px;overflow-wrap:anywhere}
+.fix{display:flex;gap:8px;align-items:flex-start;font-size:.88rem}
+.fix i{font-style:normal;font-family:var(--f-mono);color:var(--warn);min-width:5.5em}
+.sev-M{color:var(--bad);font-weight:600} .sev-m{color:var(--warn);font-weight:600}
+.st{border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--surface2);font-size:.8rem}
+.st.Corregido{border-color:var(--warn)} .st.Verificado{border-color:var(--good);color:var(--good)}
+.cvds{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cvds button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 10px}
+.cvds button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><i></i>Empresa 1 · Legal Tech</div>
+  <div class="seg" role="group" aria-label="NRC y mercado" id="mktSeg">
+    <button data-m="est" aria-pressed="true">NRC 16354 · Estudiantes</button>
+    <button data-m="col" aria-pressed="false">NRC 15672 · Colegios</button>
+  </div>
+  <span class="pill" id="srvPill" title=""><i></i><span id="srvTxt">Sin servidor</span></span>
+  <button class="iconbtn" id="themeBtn" aria-label="Cambiar tema">Tema</button>
+</div>
+
+<div class="shell">
+<nav class="side" id="side" aria-label="Secciones">
+  <a href="#panorama">Panorama</a>
+  <a href="#avances">Nuestros avances</a>
+  <a href="#entregas">Entregas y puntos</a>
+  <a href="#plan">Plan y roles</a>
+  <a href="#clase">Lo visto en clase</a>
+  <a href="#mercado">Mercado y solución</a>
+  <a href="#evaluacion">Evaluación de apps</a>
+  <a href="#revision">Calidad documental</a>
+  <a href="#referencia">Referencia Legal Tech</a>
+  <a href="#fuentes">Fuentes</a>
+  <div class="prog"><div class="eyebrow">Avance del plan</div><div class="bar" style="margin-top:8px"><i id="sideBar" style="width:0"></i></div><div class="small muted" id="sideTxt" style="margin-top:4px"></div></div>
+</nav>
+
+<main>
+
+<!-- PANORAMA -->
+<section id="panorama" class="stack">
+  <div class="eyebrow">Ingeniería de Requisitos · Prof. Lúcia Cardoso · <span id="mktLabel"></span></div>
+  <h1>Entregar una solución de dos aplicaciones para <span id="mktName" style="color:var(--accent)"></span></h1>
+  <p class="small muted" style="max-width:70ch">Tres entregas puntuadas: Documento de Visión, SRS y Defensa final. La solución une una app especializada con IA y una generalista en un flujo de valor, sustentadas en una evaluación contra los requisitos del mercado.</p>
+  <div class="cds" id="cds"></div>
+  <div class="grid w3">
+    <div class="card"><div class="eyebrow">Próximas tareas</div><div class="next" id="nextTasks" style="margin-top:10px"></div></div>
+    <div class="card"><div class="eyebrow">Avance del plan</div><div class="row" style="gap:20px;margin-top:10px"><div class="ring" id="ring"><span id="ringTxt">0%</span></div><div class="stack" style="flex:1 1 180px;gap:8px" id="roleProg"></div></div></div>
+    <div class="card"><div class="eyebrow">Puntos de las tres entregas</div><div id="ptsBox" style="margin-top:10px" class="stack"></div></div>
+  </div>
+  <div class="callout" id="srvHint"></div>
+</section>
+
+<!-- AVANCES -->
+<section id="avances">
+  <div class="sec-head"><div class="eyebrow">Carpeta NuestrosAvances</div><h2>Registra avances, archivos y conclusiones</h2><p class="muted">Cada registro se guarda al instante en la carpeta según su estado y su tipo de archivo. Lo que está en la carpeta aparece aquí aunque lo hayas puesto a mano.</p></div>
+  <div class="stack">
+    <div class="card stack">
+      <div class="row">
+        <div class="seg" role="group" aria-label="Qué vas a registrar" id="avKind">
+          <button data-k="archivo" aria-pressed="true">Archivo</button>
+          <button data-k="nota" aria-pressed="false">Nota</button>
+          <button data-k="conclusion" aria-pressed="false">Conclusión</button>
+          <button data-k="decision" aria-pressed="false">Decisión</button>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))">
+        <label class="small stack" style="gap:4px">Estado
+          <select class="fld" id="avEstado">
+            <option value="hecho">Hecho definitivo (CosasHechas)</option>
+            <option value="discutido">Plan discutido (PlanesDiscutidos)</option>
+            <option value="porhacer">Por hacer (PorHacer)</option>
+          </select></label>
+        <label class="small stack" style="gap:4px">Entregable relacionado
+          <select class="fld" id="avEnt">
+            <option value="vision">Documento de Visión</option>
+            <option value="srs">SRS</option>
+            <option value="defensa">Defensa final</option>
+            <option value="clase">Clase y examen</option>
+            <option value="legaltech">Proyecto Legal Tech</option>
+            <option value="general">General</option>
+          </select></label>
+        <label class="small stack" style="gap:4px">Responsable
+          <select class="fld" id="avResp"><option value="A">A · Líder de requisitos</option><option value="B">B · Investigador</option><option value="C">C · Integrador y calidad</option><option value="ABC">Todos</option></select></label>
+      </div>
+      <input type="text" id="avTitulo" placeholder="Título corto, p. ej. Guion de entrevista v2" aria-label="Título">
+      <textarea id="avTexto" placeholder="Escribe aquí la nota, la conclusión o la decisión (qué se decidió y por qué)." aria-label="Texto" hidden></textarea>
+      <div id="avFiles">
+        <div class="drop" id="drop"><b>Arrastra archivos aquí</b> o <label style="text-decoration:underline;cursor:pointer">elígelos<input type="file" id="fileIn" multiple hidden></label><div class="flist" id="flist"></div></div>
+        <input type="text" id="avDesc" placeholder="Descripción o conclusión del archivo (opcional)" aria-label="Descripción" style="margin-top:10px">
+      </div>
+      <div class="path" id="avPath"></div>
+      <div class="row"><button class="btn" id="avSave">Guardar en la carpeta</button><span class="msg" id="avMsg" role="status"></span></div>
+    </div>
+
+    <div class="card stack">
+      <div class="row" style="justify-content:space-between">
+        <div class="row" id="avFilters"></div>
+        <input type="text" id="avSearch" placeholder="Buscar" aria-label="Buscar avances" style="max-width:220px">
+      </div>
+      <div class="small muted" id="avSummary"></div>
+      <div class="kan" id="kan"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ENTREGAS -->
+<section id="entregas">
+  <div class="sec-head"><div class="eyebrow">Qué piden y cuánto vale</div><h2>Entregas, requisitos formales y rúbrica</h2><p class="muted">Autoevalúa cada ítem y mira cuántos puntos llevas asegurados. Los puntos salen de los PDF de la carpeta DocumentosDeEntrega.</p></div>
+  <div class="card stack">
+    <div class="tabs" role="tablist" id="entTabs"></div>
+    <div id="entBody" class="stack"></div>
+  </div>
+</section>
+
+<!-- PLAN -->
+<section id="plan">
+  <div class="sec-head"><div class="eyebrow">Plan de acción con fechas</div><h2>Qué hace cada persona y para cuándo</h2><p class="muted">Las fechas se calculan hacia atrás desde cada entrega según tu NRC. Marca las tareas y el avance se guarda. Usa «Registrar avance» para subir la evidencia.</p></div>
+  <div class="stack">
+    <div class="rolecards" id="roles"></div>
+    <div class="card stack">
+      <div class="row"><b>Parejas por componente</b><span class="small muted">La entrega de Visión exige indicar la pareja responsable de cada componente.</span></div>
+      <div class="grid" id="pairs"></div>
+    </div>
+    <div class="card row">
+      <b>Ver tareas de</b><div class="row" id="roleChips"></div>
+      <label class="small row" style="gap:6px"><input type="checkbox" id="onlyPend" style="accent-color:var(--accent)"> Solo pendientes</label>
+      <button class="chip" id="resetBtn">Reiniciar avance</button>
+    </div>
+    <div class="stack" id="phases"></div>
+  </div>
+</section>
+
+<!-- CLASE -->
+<section id="clase">
+  <div class="sec-head"><div class="eyebrow">DocumentosClases</div><h2>Lo visto en clase, listo para aplicar</h2><p class="muted">Resumen de las tres presentaciones, con herramientas para aplicar la teoría a tu documento.</p></div>
+  <div class="card stack">
+    <div class="tabs" role="tablist" id="claseTabs"></div>
+    <div id="claseBody" class="stack"></div>
+  </div>
+</section>
+
+<!-- MERCADO -->
+<section id="mercado">
+  <div class="sec-head"><div class="eyebrow">Mercado y solución</div><h2>Cliente final, sistema y flujo de valor</h2><p class="muted">Esta sección alimenta la Declaración de oportunidad, la Solución propuesta y el Apéndice D de la Visión. El perfil es una hipótesis hasta que las entrevistas lo confirmen.</p></div>
+  <div class="stack">
+    <div class="stack" id="clientBody"></div>
+    <div class="card">
+      <h3>Tu proyecto visto como sistema</h3>
+      <p class="small muted">Es el enfoque de sistemas aplicado: la caja de procesos de clase, con entorno, entradas, procesos, salidas y retroalimentación.</p>
+      <div class="sys" id="sys" style="margin-top:12px"></div>
+      <div class="card small" id="sysDetail" style="background:var(--surface2);margin-top:12px"></div>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="tag esp">App especializada · IA</span><h3 style="margin-block:8px 4px" id="pSpec"></h3><p class="small muted" id="pSpecWhy"></p></div>
+      <div class="card"><span class="tag gen">App generalista</span><h3 style="margin-block:8px 4px" id="pGen"></h3><p class="small muted" id="pGenWhy"></p></div>
+    </div>
+    <div class="card">
+      <h3>Flujo de valor del mercado</h3>
+      <p class="small muted">Cada paso indica qué app lo cubre. Toca un paso para ver el dato que pasa al siguiente.</p>
+      <div class="flow" id="flow" style="margin-top:10px"></div>
+      <div class="small" id="flowDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUACIÓN -->
+<section id="evaluacion">
+  <div class="sec-head"><div class="eyebrow">SRS · evaluación formal (1.5 pts)</div><h2>Matriz ponderada para justificar cada aplicación</h2><p class="muted">Ajusta pesos y puntajes. Los valores iniciales son ejemplos del método, no una evaluación real de los productos. Sustitúyelos con tus pruebas. Cada aplicación debe llevar a su pareja responsable.</p></div>
+  <div class="card mx stack">
+    <div class="tabs" role="tablist" id="mxTabs"></div>
+    <div id="weights" class="grid"></div>
+    <div class="scroll-x"><table id="mxTable"></table></div>
+    <div id="rank" class="stack"></div>
+    <p class="small muted" id="mxNote"></p>
+  </div>
+</section>
+
+<!-- REVISIÓN -->
+<section id="revision">
+  <div class="sec-head"><div class="eyebrow">Calidad documental</div><h2>Revisa tus documentos antes de enviarlos</h2><p class="muted">Inspección formal de software, calidad de requisitos y un registro de defectos. Úsalo antes de cada envío por correo.</p></div>
+  <div class="stack">
+    <div class="card">
+      <h3>Proceso de inspección (Fagan)</h3>
+      <div class="tabs" role="tablist" id="fagTabs" style="margin-top:10px"></div>
+      <div class="small" id="fagBody"></div>
+    </div>
+    <div class="grid w3">
+      <div class="card"><h3>Reparto de roles con 3 personas</h3><p class="small muted">Rota en cada revisión. Todos inspeccionan.</p>
+        <div class="scroll-x"><table><thead><tr><th>Revisión</th><th>Autor</th><th>Moderador</th><th>Escriba y lector</th></tr></thead><tbody>
+          <tr><td>Documento de Visión</td><td><span class="badge A">A</span></td><td><span class="badge C">C</span></td><td><span class="badge B">B</span></td></tr>
+          <tr><td>SRS</td><td><span class="badge B">B</span></td><td><span class="badge A">A</span></td><td><span class="badge C">C</span></td></tr>
+          <tr><td>Diseño y defensa</td><td><span class="badge C">C</span></td><td><span class="badge B">B</span></td><td><span class="badge A">A</span></td></tr>
+        </tbody></table></div></div>
+      <div class="card"><h3>Criterios de entrada</h3><div class="stack" id="entry" style="gap:6px;margin-top:8px"></div></div>
+      <div class="card"><h3>Criterios de salida</h3><div class="stack" id="exit" style="gap:6px;margin-top:8px"></div></div>
+    </div>
+    <div class="card stack">
+      <div><h3>Calidad de un requisito (ISO/IEC/IEEE 29148)</h3><p class="small muted">Cada requisito debe ser necesario, apropiado y no ambiguo. El conjunto debe ser completo, consistente, factible y comprensible. Describe qué se necesita, no cómo se construye.</p></div>
+      <div class="row" id="qa"></div>
+    </div>
+    <div class="card stack">
+      <div><h3>Detector de «olores» en requisitos</h3><p class="small muted">Pega un requisito. Marca lenguaje subjetivo, términos ambiguos, absolutos y no verificables. Es una ayuda de lectura, no sustituye la revisión humana.</p></div>
+      <textarea id="reqIn" aria-label="Requisito a analizar">El sistema debería ser rápido y fácil de usar para todos los estudiantes, y/o permitir buscar jurisprudencia, etc.</textarea>
+      <div class="row"><button class="btn" id="reqEx">Cargar ejemplo bien escrito</button><button class="btn ghost" id="reqBad">Cargar ejemplo malo</button></div>
+      <div class="grid" style="grid-template-columns:auto minmax(0,1fr);align-items:center"><div><div class="eyebrow">Calidad</div><div class="score" id="reqScore">0</div></div><div class="out" id="reqOut"></div></div>
+      <div class="stack" id="reqFix" style="gap:6px"></div>
+      <div class="small muted mono">Plantilla: [Condición] El [sistema/app] deberá [acción] [objeto] [criterio medible].</div>
+    </div>
+    <div class="card stack">
+      <h3>Registro de defectos de tus revisiones</h3>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <select class="fld" id="dDoc" aria-label="Documento"><option>Documento de Visión</option><option>SRS</option><option>Matriz de evaluación</option><option>Diseño y arquitectura</option><option>Guion de defensa</option></select>
+        <input type="text" id="dLoc" placeholder="Sección o página" aria-label="Ubicación">
+        <select class="fld" id="dSev" aria-label="Severidad"><option value="M">Mayor</option><option value="m">Menor</option></select>
+      </div>
+      <input type="text" id="dTxt" placeholder="Describe el defecto: qué está mal, no cómo arreglarlo" aria-label="Descripción del defecto">
+      <div class="row"><button class="btn" id="dAdd">Registrar defecto</button><span class="small muted" id="dSum"></span></div>
+      <div class="scroll-x"><table><thead><tr><th>Doc</th><th>Dónde</th><th>Sev.</th><th>Defecto</th><th>Estado</th><th></th></tr></thead><tbody id="dRows"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCIA -->
+<section id="referencia">
+  <div class="sec-head"><div class="eyebrow">PDF Legal Tech</div><h2>Referencia del enunciado</h2><p class="muted">Todo el contenido del PDF original, para citarlo en tu revisión documental.</p></div>
+  <div class="stack">
+    <div class="card"><h3>Qué se espera del proyecto (texto del enunciado)</h3>
+      <p class="small" style="margin-top:8px">Cada empresa desarrolla una solución informática con al menos dos aplicaciones: una especializada con soporte de modelos de IA y otra generalista, que apoyen actividades primarias, de apoyo o estratégicas del mercado. La elección debe sustentarse en una evaluación que garantice el cumplimiento de los requisitos identificados en la búsqueda formal de oportunidades. La especializada apoya actividades primarias o la toma de decisiones estratégicas; la generalista apoya actividades administrativas o de apoyo. El producto final se integra según un flujo de valor para el mercado asignado.</p>
+      <div class="scroll-x" style="margin-top:10px"><table><thead><tr><th>Mercado</th><th>Empresa y NRC</th></tr></thead><tbody id="allMarkets"></tbody></table></div>
+      <p class="small muted" style="margin-top:8px">El texto extraído muestra «Empresa 46», que corresponde a la Empresa 4 con la nota 6: tiene 5 integrantes y debe incluir un curso virtual. No aplica a tu equipo.</p></div>
+    <div class="card"><h3>Tres etapas de evolución</h3><div class="tl" id="tl" style="margin-top:10px"></div><div class="small" id="tlDetail"></div></div>
+    <div class="card"><h3>Categorías de aplicaciones</h3><div class="tabs" role="tablist" id="catTabs" style="margin-top:10px"></div><div id="catBody" class="grid"></div></div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h3>Catálogo de herramientas mencionadas</h3><span class="small muted" id="toolCount"></span></div>
+      <div class="row" id="toolFilters" style="margin-block:10px"></div>
+      <div class="tools" id="tools"></div>
+      <div class="card small" id="toolDetail" hidden style="margin-top:10px"></div>
+    </div>
+    <div class="card"><h3>Aplicación por área del Derecho</h3><div class="tabs" role="tablist" id="areaTabs" style="margin-top:10px"></div><div id="areaBody" class="small stack"></div></div>
+    <div class="grid w3">
+      <div class="card"><h3>Ventajas</h3><ul class="small"><li>Más eficiencia y menos costos en tareas rutinarias.</li><li>Mayor acceso a la justicia para ciudadanos y pequeñas empresas.</li><li>Decisiones apoyadas en datos y jurisprudencia.</li><li>Colaboración remota y segura.</li></ul></div>
+      <div class="card"><h3>Desafíos</h3><ul class="small"><li><b>Ética y sesgos:</b> modelos entrenados con sentencias pasadas pueden repetir sesgos.</li><li><b>Seguridad:</b> datos sensibles en la nube exigen ciberseguridad y secreto profesional.</li><li><b>Regulación:</b> en muchas jurisdicciones solo abogados ejercen el Derecho.</li></ul></div>
+      <div class="card"><h3>Reglas de la IA jurídica</h3><ul class="small"><li>Se conecta a bases verificables para reducir alucinaciones.</li><li>Es copiloto: la verificación y la firma son del profesional.</li><li>Los modelos generales se usan con Legal Prompting.</li><li>NewLaw reemplaza el cobro por hora por precios fijos.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- FUENTES -->
+<section id="fuentes">
+  <div class="sec-head"><div class="eyebrow">Transparencia</div><h2>Fuentes y supuestos</h2></div>
+  <div class="grid">
+    <div class="card"><h3>Fuentes consultadas</h3><ul class="small">
+      <li>DocumentosDeEntrega: Documento de Visión, SRS, Defensa y Diseño final, enunciado Legal Tech.</li>
+      <li>DocumentosClases: resúmenes de Objetivos y Factibilidad, Actividades técnicas de Inicio y PDS.</li>
+      <li><a href="https://en.wikipedia.org/wiki/Software_requirements_specification" target="_blank" rel="noopener">Software requirements specification</a>: ISO/IEC/IEEE 29148, calidad y olores.</li>
+      <li><a href="https://en.wikipedia.org/wiki/Software_inspection" target="_blank" rel="noopener">Software inspection</a>: etapas, roles y criterios de la inspección Fagan.</li></ul>
+      <p class="small muted" style="margin-top:8px">Consulta web hecha con Playwright. Firecrawl devolvió un error de configuración en esta sesión y no se usó.</p></div>
+    <div class="card"><h3>Supuestos que debes validar</h3><ul class="small">
+      <li>El año de las fechas es 2026, deducido de la fecha de hoy; los PDF no lo indican.</li>
+      <li>Las fechas de los exámenes (3 pts por etapa) no aparecen en los PDF; confírmalas.</li>
+      <li>Parejas, roles y fechas internas del plan son una propuesta mía.</li>
+      <li>El perfil del cliente, los dolores y los puntajes de la matriz son hipótesis y ejemplos.</li>
+      <li>Verifica disponibilidad y precios de las plataformas venezolanas mencionadas.</li></ul></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+/* ================= estado ================= */
+var S={m:'est',done:{},chk:{},defects:[],role:'ALL',w:null,rub:{},fa:[3,3,3,3,2,3],avLocal:[],onlyPend:false};
+try{var raw=localStorage.getItem('lt-e1b');if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k]}}catch(e){}
+var API={on:false,info:null},saveT=null;
+function api(path,opt){opt=opt||{};opt.headers=Object.assign({'x-lt':'1'},opt.headers||{});
+  return fetch(path,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('Error '+r.status));return j})})}
+function save(){
+  try{localStorage.setItem('lt-e1b',JSON.stringify(S))}catch(e){}
+  if(API.on){clearTimeout(saveT);saveT=setTimeout(function(){
+    var c=Object.assign({},S);delete c.avLocal;
+    api('/api/estado',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(c)}).catch(function(){})},600)}
+}
+
+/* ================= datos del curso ================= */
+var YEAR=2026;
+var DATES={est:{V:[10,29],S:[11,26],D:[12,17]},col:{V:[10,28],S:[11,25],D:[12,16]}};
+function dateOf(key){var d=DATES[S.m][key];return new Date(YEAR,d[0]-1,d[1],10,0,0)}
+function fmt(d){return d.toLocaleDateString('es-VE',{weekday:'short',day:'numeric',month:'short'})}
+var ENTREGAS={
+ V:{name:'Documento de Visión',short:'Visión',how:'PDF por correo a licardosoclasespregrado@gmail.com hasta las 10:00 am',stage:'Etapa de Inicio (35%): Documento 4 pts + Examen 3 pts = 7 pts, con regla de 3 sobre 20.',
+  fmt:['Formal: portada profesional (título y datos de la empresa), tabla de contenido, páginas numeradas, referencias APA 7','Estilo propio del equipo con logo, nombre y colores, usado todo el semestre','Máximo 9 páginas sin portada, tabla de contenido, bibliografía ni apéndices','Indicar los pares de integrantes responsables de cada componente a evaluar','Planificación con etapas o iteraciones: fecha inicio, fecha fin, horas totales y roles'],
+  rub:[['Declaración de oportunidad (máx. 2 págs)',0.25],['Solución informática propuesta y flujo de valor (máx. 2 págs)',0.5],['Objetivo general, específicos, alcance y limitaciones',0.5],['Cuadro de factibilidad técnica, operacional y económica',0.5],['Resumen de modelos o metodologías del ciclo de vida (máx. 1 pág)',0.25],['6.1 Esquema gráfico del CVDS y descripción de fases',0.25],['Apéndice A: planificación general (Gantt)',0.25],['Apéndice B: planificación detallada de la Etapa de Inicio',0.25],['Apéndice C: desglose del costo de la Fase de Desarrollo',0.25],['Apéndice D: procesos de negocio del mercado',0.5],['Apéndice E: usuarios potenciales del piloto con contactos reales y trazables',0.5]]},
+ S:{name:'SRS',short:'SRS',how:'PDF por correo a licardosoclasespregrado@gmail.com hasta las 10:00 am',stage:'Etapa de Análisis (35%): SRS 4 pts + Examen 3 pts = 7 pts, con regla de 3 sobre 20.',
+  fmt:['Formal: portada, tabla de contenido, páginas numeradas, referencias APA 7','Mismo estilo del equipo','Objetivo general y específicos con las correcciones aplicadas (sin puntaje propio)','Marco metodológico y esquema del CVDS con correcciones de la Visión (sin puntaje propio)','Cada aplicación evaluada con su pareja responsable claramente identificada'],
+  rub:[['Planificación general corregida y planificación detallada de la Etapa de Análisis',0.25],['Evaluación formal de cada aplicación (especializada y general)',1.5],['Diagramas de contexto',0.5],['PIECES',1],['Requerimientos no funcionales clasificados según ISO 9126',0.5],['Actores',0.25]]},
+ D:{name:'Defensa final',short:'Defensa',how:'Exposición en clase. Máximo 15 minutos por empresa. Valor: 20% (4 pts)',stage:'Todos los integrantes exponen. Quien no asista o no participe pierde la nota completa de la evaluación.',
+  fmt:['Exposición formal: vestimenta profesional y imagen consistente entre los integrantes','Solo permanece la empresa que expone','Cada equipo lleva su video beam, laptop y adaptadores; el cambio entre equipos debe ser rápido','Las demostraciones se hacen con las herramientas elegidas, aplicadas al mercado','Orden de exposición: se avisará con antelación'],
+  rub:[['Arquitectura final de la solución (recursos elegidos y flujo de valor, con diagramas y estructuras de almacenamiento)',1],['Diseño del aspecto e identidad de la solución',0.25],['Elementos de usabilidad según los usuarios potenciales',0.25],['Demostración de cada componente aplicada al mercado, con las herramientas elegidas',2],['Demostración del flujo de valor',0.5]]}
+};
+var ORDER=['V','S','D'];
+
+/* plan: [id, entregable, quién, días respecto a la entrega, texto] */
+var PLAN=[
+ ['v1','V','A',-21,'Confirmar con la profesora el NRC, la fecha del examen de Inicio y dudas de formato; crear acta y registrar en Avances'],
+ ['v2','V','C',-21,'Definir nombre, logo y colores de la empresa; plantilla formal con portada, tabla de contenido y numeración'],
+ ['v3','V','B',-20,'Revisión documental del mercado: buscar y seleccionar fuentes, armar lista de referencias APA 7'],
+ ['v4','V','ABC',-18,'Delimitar el mercado y las actividades a apoyar (primarias, de apoyo o estratégicas); armar la caja de procesos'],
+ ['v5','V','AC',-16,'Observación del proceso real del cliente (si es accesible) y guion de entrevista (10 min a 1 h, preguntas abiertas)'],
+ ['v6','V','AC',-14,'Entrevistar en pareja a 2 o 3 usuarios clave reales, con autorización si se graba'],
+ ['v7','V','B',-14,'Preseleccionar apps candidatas (especializada con IA y generalista) y contrastar funciones con la oportunidad'],
+ ['v8','V','A',-12,'Redactar la Declaración de oportunidad (máx. 2 págs): antecedentes con referencias, áreas, impacto y beneficios tangibles, en tono positivo'],
+ ['v9','V','BC',-11,'Redactar la Solución propuesta (máx. 2 págs) con flujo de valor y parejas responsables de cada componente'],
+ ['v10','V','A',-9,'Objetivo general, específicos (según las 4 partes del SI), alcance y limitaciones; pasar por el revisor de objetivos'],
+ ['v11','V','ABC',-8,'Cuadro de factibilidad con la calculadora; si no llega a 80%, plantear mitigación'],
+ ['v12','V','B',-7,'Resumen de modelos o metodologías del CVDS con justificación y referencias, más esquema gráfico (6 y 6.1)'],
+ ['v13','V','C',-6,'Apéndices A y B: Gantt general y detallado de Inicio con fechas reales, horas y roles'],
+ ['v14','V','A',-6,'Apéndice C: desglose del costo total de la Fase de Desarrollo'],
+ ['v15','V','B',-5,'Apéndice D: documentar los procesos de negocio del mercado'],
+ ['v16','V','AC',-5,'Apéndice E: lista de usuarios potenciales del piloto con contactos reales y trazables'],
+ ['v17','V','ABC',-3,'Revisión documental cruzada (inspección), control del límite de 9 páginas y registro de defectos'],
+ ['v18','V','C',-1,'Exportar el PDF final, verificar portada, tabla de contenido, numeración y APA; enviarlo antes de las 10:00'],
+ ['s1','S','A',-26,'Incorporar las correcciones de la profesora a objetivos, marco metodológico y CVDS'],
+ ['s2','S','C',-24,'Planificación general corregida y planificación detallada de la Etapa de Análisis con horas y fechas reales'],
+ ['s3','S','AB',-22,'Evaluación formal de la app especializada con la matriz (pareja responsable identificada)'],
+ ['s4','S','BC',-22,'Evaluación formal de la app generalista con la matriz'],
+ ['s5','S','B',-18,'Pruebas reales de las apps con casos del mercado y evidencia (capturas, resultados)'],
+ ['s6','S','AC',-17,'Diagramas de contexto del sistema'],
+ ['s7','S','ABC',-14,'Análisis PIECES completo (1 pto)'],
+ ['s8','S','B',-12,'Requerimientos no funcionales clasificados según ISO 9126'],
+ ['s9','S','A',-10,'Identificar y describir actores'],
+ ['s10','S','ABC',-6,'Cuestionario cerrado de validación de requisitos con usuarios (escala par, pocos valores)'],
+ ['s11','S','ABC',-4,'Inspección cruzada del SRS y registro de defectos'],
+ ['s12','S','C',-1,'PDF final con portada, tabla de contenido, numeración y APA; envío antes de las 10:00'],
+ ['d1','D','C',-18,'Arquitectura final con diagramas del flujo de valor y estructuras de almacenamiento'],
+ ['d2','D','C',-16,'Diseño del aspecto e identidad de la solución'],
+ ['d3','D','A',-14,'Elementos de usabilidad según las características de los usuarios potenciales'],
+ ['d4','D','AB',-12,'Preparar la demostración de la app especializada con casos del mercado'],
+ ['d5','D','BC',-12,'Preparar la demostración de la app generalista'],
+ ['d6','D','ABC',-9,'Demostración del flujo de valor de extremo a extremo'],
+ ['d7','D','ABC',-6,'Guion de 15 minutos con tiempos por persona; todos exponen'],
+ ['d8','D','ABC',-4,'Ensayo cronometrado con vestimenta formal e imagen consistente'],
+ ['d9','D','C',-2,'Logística: laptop, video beam, adaptadores, copia sin conexión de la demostración'],
+ ['d10','D','ABC',-1,'Segundo ensayo y plan B si falla internet o una herramienta']
+];
+var ROLES={
+ A:{n:'Líder de requisitos',s:'Coordinación, levantamiento y especificación',c:'var(--ra)',list:['Dirige el proyecto, el calendario y las entregas','Conduce entrevistas y la elicitación','Redacta oportunidad, objetivos, SRS y trazabilidad','Responde ante la profesora']},
+ B:{n:'Investigador de mercado y tecnología',s:'Revisión documental y app especializada',c:'var(--rb)',list:['Revisión documental y referencias APA','Evalúa y configura la app de IA','Riesgos éticos, sesgos y verificación humana','Requisitos no funcionales y metodología']},
+ C:{n:'Integrador y calidad',s:'App generalista, integración y revisión',c:'var(--rc)',list:['Identidad, plantillas, Gantt y entrega final','Diseña la app generalista y el flujo de valor','Lidera la inspección y el registro de defectos','Arquitectura, demostración y logística de la defensa']}
+};
+var PAIRS=[['AB','App especializada con IA','Evaluación, configuración y demostración'],['BC','App generalista','Evaluación, configuración y demostración'],['AC','Flujo de valor e integración','Procesos del cliente, usuarios piloto y demostración del flujo']];
+
+/* ================= datos del proyecto Legal Tech ================= */
+var MK={
+ est:{nrc:'16354',name:'Estudiantes del último año de Derecho',short:'Estudiante de último año de Derecho',
+  profile:'Estudiante de los dos últimos semestres de Derecho que prepara su trabajo de grado, hace pasantías o clínica jurídica y se acerca al ejercicio profesional.',
+  secondary:['Escuela de Derecho y tutores','Clínica jurídica o pasantía donde practica','Quien financia su acceso a herramientas'],
+  jobs:['Encontrar leyes, gacetas y jurisprudencia vigentes sin pagar bases caras','Redactar libelos, contratos y poderes con estructura correcta','Practicar argumentación con casos simulados','Memorizar artículos y conceptos','Organizar apuntes, casos y portafolio de pasantías'],
+  pains:['Información dispersa y difícil de verificar','Riesgo de citar sentencias inventadas por una IA general','Poco acceso a práctica realista','Tiempo limitado entre tesis, clases y pasantía'],
+  q:['¿Qué fuentes usas hoy para buscar jurisprudencia y cuánto tardas?','¿Has usado IA en trabajos? ¿Qué falló?','¿Qué parte de redactar un escrito te toma más tiempo?','¿Cómo organizas tus apuntes y casos?','¿Qué pagarías o no pagarías por una herramienta así?'],
+  spec:'Asistente de investigación y simulación jurídica con IA',specWhy:'Candidatas del PDF entrenadas con el ordenamiento venezolano: LEXIUS Venezuela, Legalmente App, ALI y abu. Apoyan investigación avanzada, borradores y simulación de juicios. Gemini con Legal Prompting es la alternativa general.',
+  gen:'Repositorio de estudio y gestión de práctica (Notion + Anki)',genWhy:'Notion como base de jurisprudencia personal, Anki para repetición espaciada. Clio o Sudespacho si deciden simular la gestión de casos de una clínica.',
+  flow:[['Buscar normas y jurisprudencia','esp','Consulta en lenguaje natural sobre leyes, gacetas y sentencias con citas verificables.','Lista de fuentes verificadas'],['Analizar el caso y argumentar','esp','Contrasta hechos con precedentes y propone líneas de argumento.','Argumentos con citas'],['Redactar borradores','esp','Genera borradores de libelos, contratos y poderes con plantillas del Código Civil.','Borrador revisable'],['Simular el juicio','esp','Crea simulaciones basadas en jurisprudencia real.','Retroalimentación de práctica'],['Guardar y organizar','gen','El conocimiento validado se archiva en Notion con etiquetas por materia y caso.','Base de conocimiento personal'],['Estudiar y retener','gen','Artículos y conceptos clave pasan a tarjetas de Anki.','Mazo de estudio'],['Armar portafolio','gen','Escritos y casos se reúnen como evidencia profesional.','Portafolio listo para ejercer']]},
+ col:{nrc:'15672',name:'Colegios de Abogados',short:'Colegio de Abogados y sus agremiados',
+  profile:'Junta directiva o gerencia de un Colegio de Abogados que presta servicios a sus agremiados con recursos limitados. El usuario diario es el abogado afiliado y el personal administrativo.',
+  secondary:['Abogados agremiados','Personal administrativo y tesorería','Tribunal disciplinario y comisiones de formación','Universidades y entes públicos aliados'],
+  jobs:['Gestionar afiliaciones, cuotas y registros','Dar a los agremiados investigación jurídica y modelos de escritos','Organizar formación continua y eventos','Apoyar casos disciplinarios con análisis de precedentes','Comunicarse y firmar documentos de forma segura'],
+  pains:['Administración manual de afiliados y cobros','Acceso desigual a herramientas de investigación','Documentos dispersos y poca trazabilidad','Preocupación por confidencialidad y secreto profesional'],
+  q:['¿Cómo administran hoy afiliaciones y cobros?','¿Qué servicios solicitan más los agremiados?','¿Qué trámites consumen más horas del personal?','¿Qué requisitos de seguridad son innegociables?','¿Qué presupuesto y quién aprueba compras de software?'],
+  spec:'Asistente de investigación y análisis jurídico con IA para agremiados',specWhy:'Plataforma venezolana del PDF (LEXIUS, Legalmente, ALI, abu) o vLex con Vincent AI como referencia global. Apoya investigación, revisión de contratos y análisis de precedentes.',
+  gen:'Gestión del Colegio y de documentos (Clio o Sudespacho + firma electrónica)',genWhy:'Gestión de expedientes, agenda y facturación, más firma electrónica (DocuSign) y reuniones seguras en Teams o Zoom empresarial.',
+  flow:[['Afiliar y registrar','gen','Registro de datos, cuotas y estado de cada agremiado.','Padrón actualizado'],['Atender solicitudes','gen','Cada solicitud se abre como expediente con responsable y plazo.','Expediente abierto'],['Investigar y analizar','esp','La IA localiza jurisprudencia y normativa con citas.','Informe con fuentes'],['Redactar y revisar','esp','Borradores y revisión de cláusulas con revisión humana obligatoria.','Documento borrador'],['Aprobar y firmar','gen','Flujo de aprobación y firma electrónica.','Documento firmado'],['Formar y comunicar','gen','Calendario de formación y sesiones virtuales seguras.','Agremiados informados'],['Medir y decidir','esp','Análisis de casos y temas recurrentes para la junta.','Tablero de decisiones']]}
+};
+var ALLM=[['Estudiantes del último año de Derecho','Empresa 4 · NRC 15672 (nota 6) · Empresa 1 · NRC 16354',1],['Estudiantes de Postgrados vinculados al Derecho','Empresa 3 · NRC 15672',0],['Clínicas Jurídicas','Empresa 5 · NRC 16354',0],['Organizaciones de Derechos Humanos','Empresa 3 · NRC 16354',0],['Colegios de Abogados','Empresa 1 · NRC 15672',1]];
+var TL=[['1970s','Legal Tech 1.0 · Automatización básica','Procesadores de texto y bases de datos simples, como LexisNexis, para buscar jurisprudencia.'],['2000s','Legal Tech 2.0 · Digitalización e Internet','Correo electrónico, sistemas de gestión de despachos y almacenamiento en la nube.'],['Hoy','Legal Tech 3.0 · Disrupción e IA','IA, procesamiento de lenguaje natural y blockchain para tareas predictivas y analíticas complejas.']];
+var CATS=[
+ ['Back-office',[['Gestión de despachos','Unifica facturación, horas, calendario de audiencias y expedientes.'],['Gestión del conocimiento','Centraliza plantillas, contratos previos y doctrina interna.']]],
+ ['Front-office',[['Automatización de contratos','Genera contratos complejos con cuestionarios guiados.'],['Revisión analítica (e-Discovery)','IA que escanea miles de documentos para hallar pruebas.'],['Analítica predictiva','Calcula probabilidad de éxito de un caso o el comportamiento de un juez.'],['Acceso a la justicia (ODR)','Plataformas ciudadanas para reclamos y documentos sencillos.']]],
+ ['Tendencias',[['IA aplicada','Revisión de contratos, predicción de resultados y redacción de escritos.'],['Crecimiento de LegalTech','Expedientes, tareas repetitivas y asesoría remota.'],['Ciberseguridad y datos','Normativa estricta y Delegado de Protección de Datos.'],['Justicia digital','Expedientes electrónicos, firmas digitales y audiencias virtuales.'],['Blockchain','Contratos inteligentes y registros notariales digitales.']]]
+];
+var TOOLS=[
+ ['Harvey AI','esp','IA generativa','Grandes firmas (AmLaw 100), respaldada por OpenAI. Auditorías, litigios y contratos complejos.'],
+ ['Vincent AI (vLex)','esp','IA generativa','Investigación y análisis global conectado a una de las bases jurídicas más grandes. Argumentos con citas reales.'],
+ ['Prudencia.ai','esp','IA generativa','Mercado hispanohablante y europeo; normativa en español y RGPD.'],
+ ['Maite.ai','esp','IA generativa','Mercado hispanohablante y europeo.'],
+ ['Spellbook','esp','Contratos','Integrado en Word; sugiere cláusulas faltantes y detecta riesgos.'],
+ ['Kira Systems','esp','Contratos','Análisis de contratos y due diligence.'],
+ ['Luminance','esp','Contratos','Aprendizaje automático para revisar grandes volúmenes y detectar anomalías.'],
+ ['LEXIUS Venezuela','esp','Venezuela','Entrenada con el ordenamiento jurídico venezolano.'],
+ ['Legalmente App','esp','Venezuela','Plataforma local entrenada con el ordenamiento venezolano.'],
+ ['ALI','esp','Venezuela','Plataforma local entrenada con el ordenamiento venezolano.'],
+ ['abu','esp','Venezuela','Plataforma local entrenada con el ordenamiento venezolano.'],
+ ['Gemini (Legal Prompting)','esp','IA generativa','Modelo general con ventana de contexto grande para subir expedientes y extraer líneas de tiempo.'],
+ ['Clio','gen','Gestión','Gestión de despachos en la nube: tiempos, expedientes y facturación.'],
+ ['LegalClick / Kleos','gen','Gestión','Gestión de despachos: expedientes, facturación y contactos.'],
+ ['Sudespacho','gen','Gestión','Alternativa popular en España y Latinoamérica para expedientes y clientes.'],
+ ['Notion','gen','Conocimiento','Repositorios de apuntes y bases de jurisprudencia personalizadas.'],
+ ['Anki','gen','Estudio','Tarjetas con repetición espaciada para memorizar artículos.'],
+ ['Contractbook / LawVu','gen','Contratos','Ciclo de vida de contratos desde plantillas hasta firma y archivo.'],
+ ['DocuSign / Adobe Sign','gen','Firma','Firma electrónica avanzada con validez legal.'],
+ ['MS Teams / Zoom','gen','Colaboración','Versiones empresariales para reuniones y audiencias virtuales seguras.'],
+ ['OneTrust','gen','Seguridad','Gestión de privacidad, cumplimiento y gobierno de datos.'],
+ ['Tresorit / NordLocker','gen','Seguridad','Nube con cifrado de extremo a extremo para expedientes confidenciales.'],
+ ['vLex / Aranzadi','db','Base jurídica','Jurisprudencia, leyes y doctrina del entorno hispano.'],
+ ['Westlaw / LexisNexis','db','Base jurídica','Derecho internacional o anglosajón.'],
+ ['OpenLaw','gen','Blockchain','Une acuerdos en texto con contratos inteligentes.'],
+ ['Ethereum / Hyperledger','gen','Blockchain','Redes para programar contratos inteligentes.']
+];
+var KIND={esp:'IA especializada',gen:'Generalista',db:'Base jurídica'};
+var AREAS=[
+ ['Educación jurídica',['<b>Investigación:</b> vLex con Vincent AI, Aranzadi, Westlaw, LexisNexis y buscadores oficiales como el TSJ.','<b>Estudio:</b> Notion para repositorios y Anki para memorizar.','<b>Gestión de casos:</b> Clio y Sudespacho para simular clínicas y despachos.','<b>Simuladores:</b> IA generativa para simular juicios con jurisprudencia real.']],
+ ['Derecho corporativo',['Subir carpetas completas y cruzar cláusulas con el Código de Comercio y las leyes del trabajo.','Cumplimiento tributario y cambiario: analizar providencias y normas del Banco Central y alertar sobre plazos críticos.']],
+ ['Derecho penal',['Buscar fallos vinculantes sobre debido proceso o cadena de custodia.','Líneas de tiempo de expedientes masivos con modelos privados de ventana amplia.']],
+ ['Derecho civil',['Redacción automatizada de libelos, compraventas, poderes y actas con plantillas del Código Civil.','Búsqueda de precedentes en la Sala Civil del TSJ.']]
+];
+var MXC=[['Ajuste a los requisitos',25],['Cobertura de normativa venezolana',20],['Costo y acceso',15],['Fiabilidad y control de alucinaciones',15],['Seguridad y confidencialidad',10],['Integración con la otra app',10],['Facilidad de uso',5]];
+var MXD={
+ est:{esp:{'LEXIUS Venezuela':[4,5,3,4,3,3,4],'Legalmente App':[3,4,4,3,3,3,5],'ALI':[3,4,3,3,3,3,4],'abu':[3,4,4,3,3,3,4],'Vincent AI (vLex)':[4,3,2,5,4,4,3],'Gemini + Legal Prompting':[4,2,4,2,2,5,5]},gen:{'Notion':[5,3,5,3,3,5,5],'Anki':[3,3,5,3,3,2,4],'Clio':[3,3,2,4,4,4,3],'Sudespacho':[3,4,3,3,3,3,3],'DocuSign':[2,3,2,4,5,4,4],'MS Teams':[3,3,3,4,5,4,4]}},
+ col:{esp:{'LEXIUS Venezuela':[4,5,3,4,3,3,4],'Legalmente App':[3,4,3,3,3,3,4],'ALI':[3,4,3,3,3,3,4],'abu':[3,4,3,3,3,3,4],'Vincent AI (vLex)':[4,3,3,5,4,4,3],'Gemini + Legal Prompting':[3,2,4,2,2,5,4]},gen:{'Notion':[3,3,5,3,3,4,4],'Clio':[5,3,2,4,4,4,3],'Sudespacho':[5,4,3,3,3,3,3],'DocuSign':[3,3,2,4,5,4,4],'MS Teams':[3,3,3,4,5,4,4],'Anki':[1,3,5,3,3,2,4]}}
+};
+var SYS={
+ env:['Regulación y deontología del ejercicio del Derecho','Avance de la IA jurídica','Universidades y colegios','Competencia y proveedores'],
+ inp:[['Requisitos del cliente','Salen de la revisión documental, la observación y las entrevistas.'],['Normativa y jurisprudencia','Leyes, gacetas y sentencias del ordenamiento venezolano.'],['Casos y documentos del usuario','Los insumos que el cliente carga o consulta.']],
+ proc:[['Subsistema especializado (IA)','Apoya actividades primarias o decisiones estratégicas: investigar, analizar, redactar.'],['Subsistema de integración','Reglas y datos que pasan de una app a otra según el flujo de valor.'],['Subsistema generalista','Apoya actividades administrativas y de soporte: organizar, firmar, comunicar.']],
+ out:[['Documentos y análisis','Escritos, informes y argumentos revisables.'],['Decisiones mejor informadas','Estrategia y priorización apoyadas en datos.'],['Conocimiento reutilizable','Repositorio y plantillas que no se pierden.']],
+ fb:'Retroalimentación: pruebas con usuarios, defectos de revisión y cambios de requisitos vuelven a las entradas'
+};
+
+/* ================= tema ================= */
+(function(){var r=document.documentElement;try{var t=localStorage.getItem('lt-theme');if(t)r.setAttribute('data-theme',t)}catch(e){}
+$('#themeBtn').onclick=function(){var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var n=dark?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('lt-theme',n)}catch(e){}}})();
+
+/* ================= panorama ================= */
+function M(){return MK[S.m]}
+function daysTo(d){return Math.ceil((d-new Date())/86400000)}
+function renderCountdowns(){
+  $('#cds').innerHTML=ORDER.map(function(k){
+    var e=ENTREGAS[k],d=dateOf(k),n=daysTo(d),cls=n<0?'':n<=7?'bad':n<=14?'warn':'';
+    var pts=e.rub.reduce(function(a,r){return a+r[1]},0);
+    return '<div class="card cd '+cls+'"><div class="eyebrow">'+e.name+'</div><div class="n">'+(n<0?'Pasó':n)+'</div><div class="small muted">'+(n<0?'la fecha fue':'días restantes')+'</div><div><b>'+fmt(d)+'</b>'+(k==='D'?' en clase':' · 10:00 am')+'</div><div class="small muted">'+pts+' pts</div></div>';
+  }).join('');
+}
+function renderNext(){
+  var items=PLAN.filter(function(t){return !S.done[t.id||t[0]]}).map(function(t){return {id:t[0],k:t[1],who:t[2],off:t[3],txt:t[4],due:addDays(dateOf(t[1]),t[3])}}).sort(function(a,b){return a.due-b.due}).slice(0,4);
+  $('#nextTasks').innerHTML=items.map(function(t){return '<div class="it"><div style="flex:1;min-width:0"><div class="small">'+esc(t.txt)+'</div><div class="row" style="gap:4px;margin-top:4px">'+whoBadges(t.who)+dueChip(t)+'</div></div></div>'}).join('')||'<div class="small muted">Todo el plan está marcado como hecho.</div>';
+}
+function renderPts(){
+  var h='';ORDER.forEach(function(k){var e=ENTREGAS[k],tot=0,got=0;e.rub.forEach(function(r,i){tot+=r[1];got+=r[1]*(S.rub[k+i]||0)/100});
+    h+='<div><div class="row" style="justify-content:space-between"><span class="small">'+e.short+'</span><b class="mono small">'+got.toFixed(2)+' / '+tot+'</b></div><div class="bar"><i style="width:'+(got/tot*100)+'%"></i></div></div>'});
+  $('#ptsBox').innerHTML=h+'<div class="small muted">Según tu autoevaluación en Entregas.</div>';
+}
+function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
+function whoBadges(w){return w.split('').map(function(c){return '<span class="badge '+c+'">'+c+'</span>'}).join('')}
+function dueChip(t){var n=daysTo(t.due),done=S.done[t.id];var cls=done?'ok':n<0?'bad':n<=3?'warn':'';var lbl=done?'hecho':n<0?'vencida':n===0?'hoy':n===1?'mañana':'en '+n+' d';return '<span class="due '+cls+'">'+fmt(t.due)+' · '+lbl+'</span>'}
+
+/* ================= entregas ================= */
+var entSel='V';
+function renderEnt(){
+  $('#entTabs').innerHTML=ORDER.map(function(k){return '<button class="tab" role="tab" aria-selected="'+(k===entSel)+'" data-k="'+k+'">'+ENTREGAS[k].name+'</button>'}).join('');
+  var e=ENTREGAS[entSel],d=dateOf(entSel),tot=0,got=0;
+  var rows=e.rub.map(function(r,i){tot+=r[1];var v=S.rub[entSel+i]||0;got+=r[1]*v/100;
+    return '<tr><td>'+esc(r[0])+'</td><td class="mono">'+r[1]+'</td><td class="rub"><select data-i="'+i+'" aria-label="Avance de '+esc(r[0])+'">'+[0,25,50,75,100].map(function(p){return '<option value="'+p+'"'+(p===v?' selected':'')+'>'+p+'%</option>'}).join('')+'</select></td><td class="mono">'+(r[1]*v/100).toFixed(2)+'</td></tr>'}).join('');
+  $('#entBody').innerHTML='<div class="grid w3"><div><div class="eyebrow">Fecha</div><b>'+fmt(d)+(entSel==='D'?'':' · 10:00 am')+'</b><div class="small muted">'+esc(e.how)+'</div></div><div><div class="eyebrow">Peso</div><div class="small">'+esc(e.stage)+'</div></div><div><div class="eyebrow">Tu autoevaluación</div><div class="score">'+got.toFixed(2)+' <span class="small muted">/ '+tot+'</span></div></div></div>'+
+   '<div><h3>Requisitos formales</h3><ul class="small">'+e.fmt.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div>'+
+   '<div class="scroll-x"><table><thead><tr><th>Contenido evaluado</th><th>Pts</th><th>Avance</th><th>Asegurados</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  $$('#entTabs .tab').forEach(function(b){b.onclick=function(){entSel=b.dataset.k;renderEnt()}});
+  $$('#entBody select').forEach(function(s){s.onchange=function(){S.rub[entSel+s.dataset.i]=+s.value;save();renderEnt();renderPts()}});
+}
+
+/* ================= plan ================= */
+var planRole=S.role||'ALL';
+function renderPlan(){
+  $('#roles').innerHTML=Object.keys(ROLES).map(function(k){var r=ROLES[k];return '<div class="card role '+k+'"><div class="row"><span class="badge '+k+'">'+k+'</span><h3>'+r.n+'</h3></div><div class="small muted">'+r.s+'</div><ul class="small">'+r.list.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div>'}).join('');
+  $('#pairs').innerHTML=PAIRS.map(function(p){return '<div class="card" style="background:var(--surface2)"><div class="row" style="gap:4px">'+whoBadges(p[0])+'</div><b class="small">'+p[1]+'</b><div class="small muted">'+p[2]+'</div></div>'}).join('');
+  $('#roleChips').innerHTML=[['ALL','Todos'],['A','A'],['B','B'],['C','C']].map(function(r){return '<button class="chip" aria-pressed="'+(S.role===r[0])+'" data-r="'+r[0]+'">'+r[1]+'</button>'}).join('');
+  $('#onlyPend').checked=!!S.onlyPend;
+  $$('#roleChips .chip').forEach(function(b){b.onclick=function(){S.role=b.dataset.r;save();renderPlan()}});
+  var h='';
+  ORDER.forEach(function(k){
+    var all=PLAN.filter(function(t){return t[1]===k});
+    var d=all.filter(function(t){return S.done[t[0]]}).length;
+    var rows=all.filter(function(t){return (S.role==='ALL'||t[2].indexOf(S.role)>-1)&&(!S.onlyPend||!S.done[t[0]])}).map(function(t){
+      var o={id:t[0],due:addDays(dateOf(k),t[3])};
+      return '<div class="task'+(S.done[t[0]]?' done':'')+'"><input type="checkbox" data-id="'+t[0]+'"'+(S.done[t[0]]?' checked':'')+' aria-label="Marcar tarea"><div style="min-width:0"><div class="t">'+esc(t[4])+'</div><div class="who">'+whoBadges(t[2])+dueChip(o)+'</div></div><button class="mini" data-reg="'+t[0]+'">Registrar avance</button></div>'}).join('');
+    h+='<div class="phase"><header><h3>'+ENTREGAS[k].name+'</h3><span class="tag">entrega '+fmt(dateOf(k))+'</span><div class="bar"><i style="width:'+(d/all.length*100)+'%"></i></div><span class="small muted">'+d+'/'+all.length+'</span></header>'+(rows||'<div class="task small muted" style="grid-template-columns:1fr">Sin tareas para este filtro.</div>')+'</div>';
+  });
+  $('#phases').innerHTML=h;
+  $$('#phases input').forEach(function(c){c.onchange=function(){if(c.checked)S.done[c.dataset.id]=1;else delete S.done[c.dataset.id];save();renderPlan();renderProgress()}});
+  $$('#phases [data-reg]').forEach(function(b){b.onclick=function(){var t=PLAN.filter(function(x){return x[0]===b.dataset.reg})[0];
+    $('#avTitulo').value=t[4].slice(0,90);$('#avEnt').value=t[1]==='V'?'vision':t[1]==='S'?'srs':'defensa';$('#avResp').value=t[2].length>1?'ABC':t[2];
+    updatePath();document.getElementById('avances').scrollIntoView({behavior:'smooth'});$('#avTitulo').focus()}});
+}
+$('#onlyPend').onchange=function(){S.onlyPend=this.checked;save();renderPlan()};
+$('#resetBtn').onclick=function(){S.done={};save();renderPlan();renderProgress()};
+function renderProgress(){
+  var tot=PLAN.length,dn=PLAN.filter(function(t){return S.done[t[0]]}).length,pc=Math.round(dn/tot*100);
+  $('#ring').style.setProperty('--p',pc);$('#ringTxt').textContent=pc+'%';
+  $('#sideBar').style.width=pc+'%';$('#sideTxt').textContent=dn+' de '+tot+' tareas';
+  $('#roleProg').innerHTML=['A','B','C'].map(function(r){var ts=PLAN.filter(function(t){return t[2].indexOf(r)>-1}),d=ts.filter(function(t){return S.done[t[0]]}).length;return '<div class="row" style="flex-wrap:nowrap"><span class="badge '+r+'">'+r+'</span><div style="flex:1"><div class="small">'+ROLES[r].n+' · '+d+'/'+ts.length+'</div><div class="bar"><i style="width:'+(d/ts.length*100)+'%;background:'+ROLES[r].c+'"></i></div></div></div>'}).join('');
+  renderNext();
+}
+
+/* ================= clase ================= */
+var CLASE=[
+ {t:'Levantamiento de información',h:function(){return '<p class="small muted">En la etapa de Inicio se usa para conocer la organización o identificar un mercado factible. Orden recomendado:</p>'+
+  '<div class="grid">'+[['1. Revisión documental','Primero y siempre. Buscar y seleccionar fuentes, armar referencias, revisarlas, usar lo aprendido y presentarlo sustentado. Solo cuesta un dispositivo con Internet.'],['2. Observación','Ver en primera fila cómo se ejecutan las actividades: actores, formularios, tiempos, esperas, cuellos de botella. El observador no debe alterar el proceso.'],['3. Entrevistas','A muy pocos usuarios estratégicos, de hecho o potenciales, nunca intermediarios. Entre 10 minutos y 1 hora, en pareja (uno conversa, otro anota). Guion con tiempos máximos. Nunca grabar sin autorización. Focus group: máximo 8 personas con el mismo rol.'],['4. Cuestionarios','Indirectos y anónimos. Solo preguntas cerradas, escalas pares y de pocos valores, sin preguntas abiertas. Se usan más en Análisis o Diseño que en Inicio.']].map(function(x){return '<div class="card" style="background:var(--surface2)"><b>'+x[0]+'</b><p class="small muted" style="margin-top:4px">'+x[1]+'</p></div>'}).join('')+'</div>'+
+  '<div class="card"><b>Cómo elegir la técnica</b><p class="small muted">Tiempo, costo, oportunidad (objetivo a lograr) y requisitos. Las entrevistas y cuestionarios cuestan más; la revisión documental y las entrevistas consumen más tiempo. Los costos de estas actividades deben estar en el presupuesto.</p></div>'+
+  '<div class="callout"><b>Ajuste a tu plan:</b> con la entrega de Visión, prioriza revisión documental, luego observación y 2 o 3 entrevistas estratégicas en pareja. Los cuestionarios se reservan para validar requisitos en el SRS.</div>'}},
+ {t:'Oportunidad y solución',h:function(){return '<div class="grid">'+
+  '<div class="card" style="background:var(--surface2)"><b>Declaración de oportunidad</b><ul class="small"><li><b>Antecedentes:</b> historia reciente, propósito y visión de la organización, con referencias.</li><li><b>Oportunidades:</b> áreas a apoyar, a qué personas se orienta, impacto y relevancia.</li><li><b>Beneficios tangibles:</b> reducción de tiempos, costos y esperas, calculables.</li><li>Redacción positiva: hablar de apoyo, mejora y beneficios, no de errores.</li><li>Apoyada en tipos de SI y en procesos estratégicos, primarios o de apoyo.</li></ul></div>'+
+  '<div class="card" style="background:var(--surface2)"><b>Solución propuesta</b><ul class="small"><li>Responde de forma clara a la oportunidad.</li><li>Si es solución comercial: detallar la elegida en funciones compatibles con la oportunidad y citar referencias.</li><li>Si es a la medida: arquitectura y tecnología recomendada.</li><li>Se detalla con objetivo general, específicos, alcance y limitaciones.</li><li>Comunicarse con el cliente potencial aumenta la probabilidad de aceptación.</li></ul></div></div>'+
+  '<div class="callout"><b>Para tu caso:</b> tu solución es comercial (dos apps elegidas), así que la Solución propuesta debe describir cada app por sus funciones, justificar la elección con referencias e indicar el flujo de valor y las parejas responsables.</div>'}},
+ {t:'Objetivos',h:function(){return '<div class="grid">'+
+  '<div class="card" style="background:var(--surface2)"><b>Reglas</b><ul class="small"><li>Un objetivo es una acción que produce un resultado tangible y medible.</li><li>Empieza con verbo, máximo 2 líneas, entendible sin explicación.</li><li>El verbo del general debe corresponder a etapas del CVDS.</li><li>La suma de los específicos debe producir el general.</li><li>Las actividades obligatorias del CVDS (levantamiento, requerimientos, elegir plataforma, pruebas) no son objetivos.</li></ul></div>'+
+  '<div class="card" style="background:var(--surface2)"><b>Cada específico apunta a una de las 4 partes del SI</b><ul class="small"><li><b>Software:</b> casi siempre hay objetivos aquí.</li><li><b>Hardware:</b> normalmente se elige, instala y configura; no es objetivo.</li><li><b>Redes:</b> solo si diseñas la red.</li><li><b>Personas:</b> solo si diseñas o adaptas procesos de negocio; documentarlos no es objetivo.</li></ul></div>'+
+  '<div class="card" style="background:var(--surface2)"><b>Alcance y limitaciones</b><ul class="small"><li>El alcance detalla los productos de cada específico: documentación o productos tangibles.</li><li>Las limitaciones delimitan planificación, recursos o entorno. <b>No son riesgos</b>; los riesgos se tratan en la factibilidad.</li></ul></div></div>'+
+  '<div class="stack"><h3>Revisor de objetivos</h3><textarea id="objIn" aria-label="Objetivo a revisar" placeholder="Escribe un objetivo, p. ej. Configurar una aplicación de IA jurídica para apoyar la investigación de jurisprudencia de estudiantes de Derecho."></textarea><div class="stack" id="objOut" style="gap:6px"></div></div>'},
+  init:function(){$('#objIn').oninput=revisarObj;revisarObj()}},
+ {t:'Factibilidad',h:function(){return '<p class="small muted">Es la probabilidad de éxito del proyecto. Se evalúan operacional, técnica y económica. Pesos del curso: 40% operacional, 30% técnica, 20% costo total de desarrollo, 10% costo de mantenimiento. El éxito esperado debe ser de al menos 80%; si es menor, hay que mitigar, renegociar o buscar otra oportunidad. Usa pocos valores en la escala.</p><div class="grid w3" id="faBox"></div><div class="row" style="gap:20px"><div><div class="eyebrow">Éxito esperado</div><div class="score" id="faTot">0%</div></div><div class="out" id="faMsg" style="flex:1 1 260px"></div></div><div class="small muted">Valores de ejemplo precargados; ajústalos con la evidencia de tu mercado. Escala 1 a 4: 1 muy baja, 4 muy alta.</div>'},
+  init:function(){renderFa()}},
+ {t:'PDS y ciclo de vida',h:function(){return '<div class="stack"><div class="cvds" id="cvds"></div><div class="card small" id="cvdsInfo" style="background:var(--surface2)"></div></div>'+
+  '<div class="grid"><div class="card" style="background:var(--surface2)"><b>Fase I y Fase II</b><p class="small muted">Fase I: Inicio, Análisis, Diseño, Implementación y Transición. Fase II: el SI en producción, con un subsistema administrativo que da soporte y mantenimiento. El paso entre fases se llama conversión.</p></div>'+
+  '<div class="card" style="background:var(--surface2)"><b>Caja de procesos</b><p class="small muted">Entradas y recursos a la izquierda, actividades en el centro, resultados a la derecha. Da la visión general de alto nivel; luego se detalla en la Visión y el SRS.</p></div>'+
+  '<div class="card" style="background:var(--surface2)"><b>Era IV de los SI</b><p class="small muted">Desde 1990, Internet y la WWW. Se desarrolla para web, móviles, IA y ubicuidad; las aplicaciones de escritorio se consideran obsoletas. Lo que cuenta es cumplir requisitos y necesidades del cliente.</p></div></div>'+
+  '<div class="card"><b>Estándares y madurez (CMM)</b><div class="tabs" id="cmmTabs" style="margin-top:8px"></div><div class="small" id="cmmBody"></div><p class="small muted" style="margin-top:8px">ITIL: buenas prácticas de servicios de TI (Reino Unido). COBIT: gobierno y auditoría de TI. CMM/CMMI: mejora y acreditación de procesos de desarrollo; se sube de nivel sin saltos.</p></div>'},
+  init:function(){renderCvds();renderCmm()}},
+ {t:'Revisión documental',h:function(){return '<div class="grid">'+['Buscar y seleccionar las fuentes a estudiar','Armar la lista de referencias bibliográficas','Revisar cada una de las elegidas','Utilizar lo aprendido','Presentar lo aprendido sustentándolo en las referencias'].map(function(x,i){return '<div class="card" style="background:var(--surface2)"><div class="eyebrow">Paso '+(i+1)+'</div><b class="small">'+x+'</b></div>'}).join('')+'</div>'+
+  '<ul class="small"><li>La calidad se mide por la efectividad: si convences al cliente y sustentas con fuentes confiables y formales, la revisión fue buena.</li><li>Las fuentes pueden ser papel, videos, audios, imágenes o conversaciones.</li><li>Usa APA 7.ª edición (guía en Material de Referencia). Agrupa por tipo y ordena alfabéticamente, o numera en orden de aparición [1].</li><li>Deja claro qué es de autoría propia y qué es de otros. No citar es plagio.</li><li>Un profesional cuida la transparencia y la confidencialidad de la información de sus clientes.</li></ul>'+
+  '<div class="callout"><b>Ojo con tus referencias:</b> el enunciado Legal Tech se apoya en resúmenes hechos con Gemini. Para la Visión busca las fuentes originales (artículos, sitios oficiales, documentación de cada plataforma) y cítalas en APA.</div>'}}
+];
+var claseSel=0;
+function renderClase(){
+  $('#claseTabs').innerHTML=CLASE.map(function(c,i){return '<button class="tab" role="tab" aria-selected="'+(i===claseSel)+'" data-i="'+i+'">'+c.t+'</button>'}).join('');
+  $('#claseBody').innerHTML=CLASE[claseSel].h();
+  if(CLASE[claseSel].init)CLASE[claseSel].init();
+  $$('#claseTabs .tab').forEach(function(b){b.onclick=function(){claseSel=+b.dataset.i;renderClase()}});
+}
+var VERBOS={analizar:'Análisis',diseñar:'Diseño (supone un análisis previo)',implementar:'Implementación (supone diseño y análisis previos)',desarrollar:'Todas las etapas de la Fase I hasta Producción',programar:'Implementación',proponer:'Inicio (propuesta de solución)',configurar:'Implementación',instalar:'Implementación',evaluar:'Inicio o Análisis según el objeto',adaptar:'Diseño e Implementación',rediseñar:'Diseño de procesos de negocio'};
+function revisarObj(){
+  var t=$('#objIn').value.trim(),out=[];
+  if(!t){$('#objOut').innerHTML='<div class="small muted">Escribe un objetivo para revisarlo.</div>';return}
+  var w=t.split(/\s+/),v=w[0].toLowerCase();
+  if(VERBOS[v])out.push(['Verbo','«'+v+'» corresponde a: '+VERBOS[v]+'. Comprueba que tu alcance cubra esas etapas.']);
+  else if(/(ar|er|ir|ír)$/.test(v))out.push(['Verbo','«'+v+'» está en infinitivo. Verifica que corresponda a una etapa del CVDS y que no implique más ni menos alcance.']);
+  else out.push(['Falla','Debe comenzar con un verbo en infinitivo (analizar, diseñar, implementar...).']);
+  if(w.length>40)out.push(['Largo','Tiene '+w.length+' palabras; debe caber en 2 líneas.']);
+  if(/levantamiento|levantar|requerimientos|requisitos|pruebas|entrevist|elegir plataforma|capacitar/i.test(t))out.push(['Actividad','Parece una actividad obligatoria del CVDS. Esas se detallan en el marco metodológico y la planificación, no como objetivo.']);
+  var partes=[];
+  if(/aplicaci|módulo|software|sistema|portal|base de datos|reporte|app\b/i.test(t))partes.push('Software');
+  if(/proceso de negocio|procesos de negocio|personas|usuarios/i.test(t))partes.push('Personas');
+  if(/hardware|servidor|dispositivo|equipo/i.test(t))partes.push('Hardware');
+  if(/\bred\b|redes|comunicaci/i.test(t))partes.push('Redes');
+  out.push(['Partes del SI',partes.length?partes.join(', '):'No detecto una parte clara (software, hardware, redes, personas). Aclara el producto.']);
+  if((t.match(/\sy\s/g)||[]).length>1)out.push(['Compuesto','Varias conjunciones: puede mezclar más de un producto. Considera separarlo.']);
+  $('#objOut').innerHTML=out.map(function(f){return '<div class="fix"><i>'+f[0]+'</i><span>'+esc(f[1])+'</span></div>'}).join('');
+}
+var FA=[['Operacional funcional',20],['Operacional política',20],['Técnica · recursos TI',15],['Técnica · RRHH especializados',15],['Económica · costo de desarrollo',20],['Económica · costo de mantenimiento',10]];
+function renderFa(){
+  $('#faBox').innerHTML=FA.map(function(f,i){return '<label class="small stack" style="gap:4px"><span>'+f[0]+' <b class="mono">'+f[1]+'%</b></span><select class="fld" data-i="'+i+'">'+[1,2,3,4].map(function(v){return '<option'+(S.fa[i]===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select></label>'}).join('');
+  var tot=0;FA.forEach(function(f,i){tot+=S.fa[i]/4*f[1]});
+  var el=$('#faTot');el.textContent=tot.toFixed(0)+'%';el.style.color=tot>=80?'var(--good)':tot>=60?'var(--warn)':'var(--bad)';
+  var low=FA.map(function(f,i){return [f[0],S.fa[i]]}).filter(function(x){return x[1]<=2}).map(function(x){return x[0]});
+  $('#faMsg').textContent=tot>=80?'Cumples el umbral de 80%. Aun así, deja constancia de la evidencia de cada valor.':'Está por debajo de 80%. Mitiga antes de arrancar'+(low.length?': mejora '+low.join(', ')+'.':'.');
+  $$('#faBox select').forEach(function(s){s.onchange=function(){S.fa[+s.dataset.i]=+s.value;save();renderFa()}});
+}
+var CV=[['Inicio','Identifica la necesidad y valida la factibilidad. Levantamiento de información, oportunidad, solución, marco de trabajo y planificación. Producto: Documento de Visión.'],['Análisis','Define requerimientos del SI. Producto: SRS.'],['Diseño','Diseño modular de componentes, arquitectura, interfaces y datos.'],['Implementación','Construcción, adquisición o configuración de los componentes.'],['Transición','Pruebas, capacitación y conversión del ambiente de desarrollo al de producción.'],['Fase II · Producción','El SI forma parte del día a día; se sostiene con un subsistema administrativo de soporte y mantenimiento.']];
+var cvSel=0;
+function renderCvds(){
+  $('#cvds').innerHTML=CV.map(function(c,i){return (i?'<span class="muted">→</span>':'')+'<button aria-pressed="'+(i===cvSel)+'" data-i="'+i+'">'+c[0]+'</button>'}).join('');
+  $('#cvdsInfo').innerHTML='<b>'+CV[cvSel][0]+'</b><br>'+CV[cvSel][1];
+  $$('#cvds button').forEach(function(b){b.onclick=function(){cvSel=+b.dataset.i;renderCvds()}});
+}
+var CMM=[['1 Inicial','Caos: cada desarrollador usa sus métodos. El éxito depende de individuos. Impredecible y no repetible.'],['2 Repetible','Gerencia de proyectos establecida para costos, cronogramas y funciones. Se intenta repetir éxitos.'],['3 Definido','Hay un PDS estándar (metodología) adaptado a cada proyecto. Documentación consistente.'],['4 Gerenciado','Objetivos medibles de calidad y productividad, guardados en una base de datos.'],['5 Optimizado','Mejora continua del PDS según medidas y lecciones aprendidas compartidas.']];
+var cmmSel=0;
+function renderCmm(){
+  $('#cmmTabs').innerHTML=CMM.map(function(c,i){return '<button class="tab" role="tab" aria-selected="'+(i===cmmSel)+'" data-i="'+i+'">'+c[0]+'</button>'}).join('');
+  $('#cmmBody').textContent=CMM[cmmSel][1];
+  $$('#cmmTabs .tab').forEach(function(b){b.onclick=function(){cmmSel=+b.dataset.i;renderCmm()}});
+}
+
+/* ================= mercado ================= */
+var sysSel='',flowSel=0;
+function renderMarket(){
+  $$('#mktSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.m===S.m)});
+  var m=M();
+  $('#mktName').textContent=m.name.toLowerCase();
+  $('#mktLabel').textContent='NRC '+m.nrc;
+  $('#clientBody').innerHTML=
+   '<div class="grid w3"><div class="card"><div class="eyebrow">Cliente final · NRC '+m.nrc+'</div><h3 style="margin-block:6px">'+esc(m.short)+'</h3><p class="small">'+esc(m.profile)+'</p></div>'+
+   '<div class="card"><div class="eyebrow">Otros interesados</div><ul class="small">'+m.secondary.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div>'+
+   '<div class="card"><div class="eyebrow">Hipótesis a validar</div><ul class="small">'+m.pains.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div></div>'+
+   '<div class="grid w3"><div class="card"><h3>Qué necesita lograr</h3><ul class="small">'+m.jobs.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div>'+
+   '<div class="card"><h3>Preguntas para tus entrevistas</h3><p class="small muted">Abiertas, no de sí o no. Máximo 1 hora, en pareja.</p><ol class="small">'+m.q.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol></div></div>';
+  $('#pSpec').textContent=m.spec;$('#pSpecWhy').textContent=m.specWhy;$('#pGen').textContent=m.gen;$('#pGenWhy').textContent=m.genWhy;
+  flowSel=0;renderFlow();renderMx();renderCountdowns();renderPlan();renderEnt();renderNext();
+}
+$$('#mktSeg button').forEach(function(b){b.onclick=function(){S.m=b.dataset.m;save();renderMarket()}});
+function renderSys(){
+  var h='<div class="env"><div class="eyebrow">Entorno (influye pero no lo controlas)</div><div class="row">'+SYS.env.map(function(e){return '<span class="chip">'+e+'</span>'}).join('')+'</div></div>';
+  function col(title,arr,pre){return '<div class="col"><div class="eyebrow">'+title+'</div>'+arr.map(function(x,i){var id=pre+i;return '<button class="node" data-id="'+id+'" aria-pressed="'+(sysSel===id)+'">'+x[0]+'</button>'}).join('')+'</div>'}
+  h+=col('Entradas',SYS.inp,'i')+'<div class="arrow">→</div>'+col('Procesos (tus 2 apps + integración)',SYS.proc,'p')+'<div class="arrow">→</div>'+col('Salidas',SYS.out,'o')+'<div class="fb">↺ '+SYS.fb+'</div>';
+  $('#sys').innerHTML=h;
+  var all={};SYS.inp.forEach(function(x,i){all['i'+i]=x});SYS.proc.forEach(function(x,i){all['p'+i]=x});SYS.out.forEach(function(x,i){all['o'+i]=x});
+  $('#sysDetail').innerHTML=sysSel?('<b>'+all[sysSel][0]+'</b><br>'+all[sysSel][1]):'Toca un elemento. El límite del sistema es tu solución de dos apps; el mercado y la normativa son su entorno.';
+  $$('#sys .node').forEach(function(b){b.onclick=function(){sysSel=b.dataset.id;renderSys()}});
+}
+function renderFlow(){
+  var fl=M().flow;
+  $('#flow').innerHTML=fl.map(function(s,j){return '<button class="step" aria-pressed="'+(j===flowSel)+'" data-i="'+j+'"><b class="small">'+s[0]+'</b><br><span class="tag '+s[1]+'">'+(s[1]==='esp'?'IA':'General')+'</span></button>'}).join('');
+  var s=fl[flowSel];$('#flowDetail').innerHTML='<b>'+s[0]+'</b>. '+esc(s[2])+' <span class="muted">Entrega: '+esc(s[3])+'.</span>';
+  $$('#flow .step').forEach(function(b){b.onclick=function(){flowSel=+b.dataset.i;renderFlow()}});
+}
+
+/* ================= matriz ================= */
+var mxTab='esp',mxScores={};
+function renderMx(){
+  var weights=S.w||MXC.map(function(c){return c[1]});
+  $('#mxTabs').innerHTML=[['esp','App especializada (IA)'],['gen','App generalista']].map(function(t){return '<button class="tab" role="tab" aria-selected="'+(mxTab===t[0])+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join('');
+  $('#weights').innerHTML=MXC.map(function(c,i){return '<label class="small"><div class="row" style="justify-content:space-between"><span>'+c[0]+'</span><b class="mono" id="wv'+i+'">'+weights[i]+'</b></div><input type="range" min="0" max="40" value="'+weights[i]+'" data-i="'+i+'" aria-label="Peso '+c[0]+'"></label>'}).join('');
+  var data=MXD[S.m][mxTab],names=Object.keys(data),key=S.m+mxTab;
+  if(!mxScores[key]){mxScores[key]={};names.forEach(function(n){mxScores[key][n]=data[n].slice()})}
+  var sc=mxScores[key];
+  var h='<thead><tr><th>Candidata</th>'+MXC.map(function(c){return '<th>'+c[0]+'</th>'}).join('')+'<th>Total</th></tr></thead><tbody>';
+  names.forEach(function(n,ni){h+='<tr><td><b>'+n+'</b></td>'+sc[n].map(function(v,i){var o='';for(var k=1;k<=5;k++)o+='<option'+(k===v?' selected':'')+'>'+k+'</option>';return '<td><select data-n="'+n+'" data-i="'+i+'" aria-label="'+n+' '+MXC[i][0]+'">'+o+'</select></td>'}).join('')+'<td class="mono" id="tot-'+ni+'"></td></tr>'});
+  $('#mxTable').innerHTML=h+'</tbody>';
+  function calc(){
+    var wsum=weights.reduce(function(a,b){return a+b},0)||1;
+    var res=names.map(function(n){var t=0;sc[n].forEach(function(v,i){t+=v*weights[i]});return [n,t/wsum/5*100]}).sort(function(a,b){return b[1]-a[1]});
+    names.forEach(function(n,i){var r=res.filter(function(x){return x[0]===n})[0];$('#tot-'+i).textContent=r[1].toFixed(0)});
+    $('#rank').innerHTML=res.map(function(r,i){return '<div class="rank'+(i===0?' top':'')+'"><span>'+(i===0?'★ ':'')+r[0]+'</span><div class="bar"><i style="width:'+r[1]+'%"></i></div><b class="mono">'+r[1].toFixed(0)+'</b></div>'}).join('');
+    $('#mxNote').textContent='Propuesta actual: '+res[0][0]+' ('+res[0][1].toFixed(0)+'/100). Valida los puntajes con pruebas reales y cita la evidencia en el SRS.';
+  }
+  calc();
+  $$('#mxTabs .tab').forEach(function(b){b.onclick=function(){mxTab=b.dataset.t;renderMx()}});
+  $$('#weights input').forEach(function(r){r.oninput=function(){weights[+r.dataset.i]=+r.value;S.w=weights;$('#wv'+r.dataset.i).textContent=r.value;save();calc()}});
+  $$('#mxTable select').forEach(function(s){s.onchange=function(){sc[s.dataset.n][+s.dataset.i]=+s.value;calc()}});
+}
+
+/* ================= calidad documental ================= */
+var FAG=[['Planificación','El moderador planea la inspección y verifica los criterios de entrada.','Moderador'],['Reunión de apertura','El autor explica el contexto del documento.','Autor'],['Preparación','Cada inspector lee solo y anota posibles defectos.','Todos'],['Reunión de inspección','El lector recorre el documento por partes; los inspectores señalan defectos y el escriba los registra.','Lector, escriba, inspectores'],['Retrabajo','El autor corrige según las acciones acordadas.','Autor'],['Seguimiento','Se verifican las correcciones; el moderador cierra si cumple los criterios de salida.','Moderador']];
+var ENTRY=['El documento está completo y con revisión ortográfica','Sigue la plantilla del equipo (portada, tabla de contenido, numeración)','Respeta el límite de páginas','Referencias APA 7 completas'];
+var EXIT=['Todos los defectos mayores están corregidos','Correcciones verificadas por el moderador','Cada ítem de la rúbrica tiene su sección','PDF final guardado en CosasHechas'];
+var fagSel=0;
+function renderFag(){
+  $('#fagTabs').innerHTML=FAG.map(function(f,i){return '<button class="tab" role="tab" aria-selected="'+(i===fagSel)+'" data-i="'+i+'">'+(i+1)+'. '+f[0]+'</button>'}).join('');
+  var f=FAG[fagSel];$('#fagBody').innerHTML='<p>'+f[1]+'</p><p class="muted">Participan: '+f[2]+'. Preparación, inspección y retrabajo pueden repetirse.</p>';
+  $$('#fagTabs .tab').forEach(function(b){b.onclick=function(){fagSel=+b.dataset.i;renderFag()}});
+}
+function checklist(id,items){
+  $(id).innerHTML=items.map(function(t,i){var k=id+i;return '<label class="small row" style="flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" data-k="'+k+'"'+(S.chk[k]?' checked':'')+' style="accent-color:var(--accent);margin-top:3px"><span>'+t+'</span></label>'}).join('');
+  $$(id+' input').forEach(function(c){c.onchange=function(){if(c.checked)S.chk[c.dataset.k]=1;else delete S.chk[c.dataset.k];save()}});
+}
+$('#qa').innerHTML=['Necesario','Apropiado','No ambiguo','Completo','Consistente','Factible','Comprensible','Verificable'].map(function(q){return '<span class="chip">'+q+'</span>'}).join('');
+var VAGUE=['rápido','rápidamente','fácil','fácilmente','sencillo','amigable','intuitivo','flexible','eficiente','eficientemente','adecuado','adecuada','apropiado','suficiente','óptimo','mejor','robusto','moderno','seguro','escalable','potente','bastante','mucho','muchos','poco','algunos','varios','normalmente','generalmente','habitualmente','si es posible','tan pronto como sea posible','etc','y/o'];
+var ABS=['todos','todas','siempre','nunca','ningún','ninguna','cualquier','cualquiera','jamás','100%','sin errores','completamente','totalmente'];
+var OPT=['debería','podría','puede','podrá','idealmente','preferiblemente'];
+function rx(list){return new RegExp('(^|[^\\p{L}\\p{N}])('+list.map(function(w){return w.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')}).join('|')+')(?=[^\\p{L}\\p{N}]|$)','giu')}
+var RV=rx(VAGUE),RA=rx(ABS),RO=rx(OPT);
+function analyze(){
+  var txt=$('#reqIn').value,fixes=[],pen=0,h=esc(txt),cv=0,ca=0,co=0;
+  h=h.replace(RV,function(m,p,w){cv++;return p+'<mark class="hl-vago">'+w+'</mark>'});
+  h=h.replace(RA,function(m,p,w){ca++;return p+'<mark class="hl-abs">'+w+'</mark>'});
+  h=h.replace(RO,function(m,p,w){co++;return p+'<mark class="hl-vago">'+w+'</mark>'});
+  $('#reqOut').innerHTML=h||'<span class="muted">Escribe un requisito.</span>';
+  if(!txt.trim()){$('#reqScore').textContent='0';$('#reqFix').innerHTML='';return}
+  if(cv){pen+=15*cv;fixes.push(['Ambiguo',cv+' término(s) no verificable(s). Reemplaza por una medida, p. ej. «en menos de 3 segundos».'])}
+  if(ca){pen+=15*ca;fixes.push(['Absoluto',ca+' término(s) de totalidad. Delimita qué usuarios y qué casos.'])}
+  if(co){pen+=10*co;fixes.push(['Opcional','«debería» o «podría» no obliga. Usa «deberá» para lo obligatorio.'])}
+  if(!/\b(deberá|deben|debe)\b/i.test(txt)){pen+=15;fixes.push(['Forma','No usa «deberá». Indica que es obligatorio.'])}
+  if(!/\d/.test(txt)){pen+=15;fixes.push(['Medible','No contiene números ni umbrales. Agrega un criterio de aceptación.'])}
+  var words=txt.trim().split(/\s+/).length;
+  if(words>35){pen+=10;fixes.push(['Largo','Tiene '+words+' palabras. Divide en requisitos atómicos.'])}
+  if((txt.match(/\s(y|e)\s/gi)||[]).length>=2){pen+=10;fixes.push(['Compuesto','Varias conjunciones: puede mezclar más de un requisito.'])}
+  var s=Math.max(0,100-pen),el=$('#reqScore');el.textContent=s;el.style.color=s>=80?'var(--good)':s>=50?'var(--warn)':'var(--bad)';
+  $('#reqFix').innerHTML=fixes.length?fixes.map(function(f){return '<div class="fix"><i>'+f[0]+'</i><span>'+f[1]+'</span></div>'}).join(''):'<div class="fix"><i>OK</i><span>No se detectaron olores. Que lo revise otra persona.</span></div>';
+}
+$('#reqIn').oninput=analyze;
+$('#reqEx').onclick=function(){$('#reqIn').value='Cuando el estudiante envíe una consulta de jurisprudencia, la app especializada deberá devolver al menos 3 sentencias con cita completa en menos de 10 segundos.';analyze()};
+$('#reqBad').onclick=function(){$('#reqIn').value='El sistema debería ser rápido y fácil de usar para todos los estudiantes, y/o permitir buscar jurisprudencia, etc.';analyze()};
+var STN=['Abierto','Corregido','Verificado'];
+function renderDef(){
+  var d=S.defects;
+  $('#dRows').innerHTML=d.length?d.map(function(x,i){return '<tr><td>'+esc(x.doc)+'</td><td>'+esc(x.loc||'-')+'</td><td class="sev-'+x.sev+'">'+(x.sev==='M'?'Mayor':'Menor')+'</td><td>'+esc(x.txt)+'</td><td><button class="st '+x.st+'" data-i="'+i+'" data-a="st">'+x.st+'</button></td><td><button class="chip" data-i="'+i+'" data-a="rm" aria-label="Eliminar defecto">×</button></td></tr>'}).join(''):'<tr><td colspan="6" class="muted">Aún no hay defectos. Registra aquí lo que encuentren en cada revisión.</td></tr>';
+  var open=d.filter(function(x){return x.st!=='Verificado'}).length,mj=d.filter(function(x){return x.sev==='M'&&x.st!=='Verificado'}).length;
+  $('#dSum').textContent=d.length+' registrados · '+open+' sin cerrar · '+mj+' mayores pendientes';
+  $$('#dRows button').forEach(function(b){b.onclick=function(){var i=+b.dataset.i;if(b.dataset.a==='st')d[i].st=STN[(STN.indexOf(d[i].st)+1)%3];else d.splice(i,1);save();renderDef()}});
+}
+$('#dAdd').onclick=function(){var t=$('#dTxt').value.trim();if(!t){$('#dTxt').focus();return}
+  S.defects.push({doc:$('#dDoc').value,loc:$('#dLoc').value.trim(),sev:$('#dSev').value,txt:t,st:'Abierto'});$('#dTxt').value='';save();renderDef()};
+
+/* ================= referencia ================= */
+$('#allMarkets').innerHTML=ALLM.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+(r[2]?' <span class="tag esp">incluye Empresa 1</span>':'')+'</td></tr>'}).join('');
+var tlSel=2;
+function renderTL(){
+  $('#tl').innerHTML=TL.map(function(t,i){return '<button aria-pressed="'+(i===tlSel)+'" data-i="'+i+'"><div class="yr">'+t[0]+'</div><b>'+t[1]+'</b></button>'}).join('');
+  $('#tlDetail').textContent=TL[tlSel][2];
+  $$('#tl button').forEach(function(b){b.onclick=function(){tlSel=+b.dataset.i;renderTL()}});
+}
+var catSel=0;
+function renderCats(){
+  $('#catTabs').innerHTML=CATS.map(function(c,i){return '<button class="tab" role="tab" aria-selected="'+(i===catSel)+'" data-i="'+i+'">'+c[0]+'</button>'}).join('');
+  $('#catBody').innerHTML=CATS[catSel][1].map(function(x){return '<div class="card" style="background:var(--surface2)"><b>'+x[0]+'</b><p class="small muted">'+x[1]+'</p></div>'}).join('');
+  $$('#catTabs .tab').forEach(function(b){b.onclick=function(){catSel=+b.dataset.i;renderCats()}});
+}
+var toolF='all',toolSel=-1;
+function renderTools(){
+  var f=[['all','Todas'],['esp','IA especializada'],['gen','Generalistas'],['db','Bases jurídicas']];
+  $('#toolFilters').innerHTML=f.map(function(x){return '<button class="chip" aria-pressed="'+(toolF===x[0])+'" data-f="'+x[0]+'">'+x[1]+'</button>'}).join('');
+  var list=TOOLS.map(function(t,i){return {t:t,i:i}}).filter(function(o){return toolF==='all'||o.t[1]===toolF});
+  $('#toolCount').textContent=list.length+' de '+TOOLS.length;
+  $('#tools').innerHTML=list.map(function(o){return '<button class="tool'+(o.i===toolSel?' sel':'')+'" data-i="'+o.i+'"><b>'+esc(o.t[0])+'</b><span><span class="tag '+(o.t[1]==='esp'?'esp':o.t[1]==='gen'?'gen':'')+'">'+KIND[o.t[1]]+'</span> <span class="tag">'+esc(o.t[2])+'</span></span></button>'}).join('');
+  var d=$('#toolDetail');
+  if(toolSel>=0){d.hidden=false;d.innerHTML='<b>'+esc(TOOLS[toolSel][0])+'</b><br>'+esc(TOOLS[toolSel][3])}else d.hidden=true;
+  $$('#toolFilters .chip').forEach(function(b){b.onclick=function(){toolF=b.dataset.f;toolSel=-1;renderTools()}});
+  $$('#tools .tool').forEach(function(b){b.onclick=function(){toolSel=+b.dataset.i;renderTools()}});
+}
+var areaSel=0;
+function renderAreas(){
+  $('#areaTabs').innerHTML=AREAS.map(function(c,i){return '<button class="tab" role="tab" aria-selected="'+(i===areaSel)+'" data-i="'+i+'">'+c[0]+'</button>'}).join('');
+  $('#areaBody').innerHTML=AREAS[areaSel][1].map(function(x){return '<p>'+x+'</p>'}).join('');
+  $$('#areaTabs .tab').forEach(function(b){b.onclick=function(){areaSel=+b.dataset.i;renderAreas()}});
+}
+
+/* ================= NUESTROS AVANCES ================= */
+var ESTN={hecho:'Hecho definitivo',discutido:'Plan discutido',porhacer:'Por hacer'};
+var ESTF={hecho:'CosasHechas',discutido:'PlanesDiscutidos',porhacer:'PorHacer'};
+var CLN={archivo:'Archivo',nota:'Nota',conclusion:'Conclusión',decision:'Decisión'};
+var NOTAF={nota:'Notas',conclusion:'Conclusiones',decision:'Decisiones'};
+var ENTN={vision:'Visión',srs:'SRS',defensa:'Defensa',clase:'Clase',legaltech:'Legal Tech',general:'General'};
+var AV={items:[],kind:'archivo',files:[],filter:'all',q:''};
+var TIPOS_FALLBACK={Documentos:['pdf','doc','docx','odt','txt','md','rtf'],Hojas:['xls','xlsx','csv','ods'],Presentaciones:['ppt','pptx','odp','key'],Imagenes:['png','jpg','jpeg','gif','webp','svg','bmp'],Diagramas:['drawio','vsdx','mmd','puml'],'Audio-Video':['mp4','mov','mkv','webm','mp3','wav','m4a'],Codigo:['html','js','css','json','py','java','ts','sql'],Comprimidos:['zip','rar','7z']};
+function tipoDe(name){var ext=(name.split('.').pop()||'').toLowerCase(),T=(API.info&&API.info.tipos)||TIPOS_FALLBACK;for(var k in T)if(T[k].indexOf(ext)>-1)return k;return 'Otros'}
+function sizeFmt(n){if(!n&&n!==0)return '';return n<1024?n+' B':n<1048576?(n/1024).toFixed(0)+' KB':(n/1048576).toFixed(1)+' MB'}
+function setMsg(t,cls){var m=$('#avMsg');m.textContent=t;m.className='msg '+(cls||'')}
+function updatePath(){
+  var est=$('#avEstado').value,sub;
+  if(AV.kind==='archivo')sub=AV.files.length?AV.files.map(function(f){return tipoDe(f.name)}).filter(function(v,i,a){return a.indexOf(v)===i}).join(' y '):'<tipo según el archivo>';
+  else sub=NOTAF[AV.kind];
+  $('#avPath').textContent='NuestrosAvances/'+ESTF[est]+'/'+sub+'/';
+  $('#avSave').disabled=false;
+}
+function renderKind(){
+  $$('#avKind button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.k===AV.kind)});
+  var isFile=AV.kind==='archivo';
+  $('#avFiles').hidden=!isFile;$('#avTexto').hidden=isFile;
+  if(!isFile)$('#avTexto').placeholder=AV.kind==='conclusion'?'Qué concluyeron y en qué evidencia se apoya.':AV.kind==='decision'?'Qué decidieron, qué alternativas descartaron y por qué.':'Escribe la nota.';
+  if(!API.on&&isFile)$('#avSave').disabled=true;
+  updatePath();
+}
+$$('#avKind button').forEach(function(b){b.onclick=function(){AV.kind=b.dataset.k;renderKind()}});
+$('#avEstado').onchange=updatePath;
+function setFiles(list){AV.files=Array.prototype.slice.call(list);
+  $('#flist').innerHTML=AV.files.map(function(f){return '<div>'+esc(f.name)+' <span class="muted">· '+sizeFmt(f.size)+' → '+tipoDe(f.name)+'</span></div>'}).join('');updatePath()}
+$('#fileIn').onchange=function(){setFiles(this.files)};
+var dz=$('#drop');
+['dragenter','dragover'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.add('over')})});
+['dragleave','drop'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.remove('over')})});
+dz.addEventListener('drop',function(e){if(e.dataTransfer&&e.dataTransfer.files.length)setFiles(e.dataTransfer.files)});
+
+$('#avSave').onclick=function(){
+  var estado=$('#avEstado').value,base={entregable:$('#avEnt').value,responsable:$('#avResp').value};
+  var titulo=$('#avTitulo').value.trim();
+  updatePath();$('#avSave').disabled=true;setMsg('Guardando...','');
+  var p;
+  if(AV.kind==='archivo'){
+    if(!AV.files.length){setMsg('Elige al menos un archivo.','err');$('#avSave').disabled=false;return}
+    var desc=$('#avDesc').value.trim();
+    p=AV.files.reduce(function(prev,f){return prev.then(function(){
+      return api('/api/archivo',{method:'POST',headers:{'x-estado':estado,'x-nombre':encodeURIComponent(f.name),'x-meta':encodeURIComponent(JSON.stringify(Object.assign({titulo:AV.files.length===1&&titulo?titulo:f.name,descripcion:desc},base))),'Content-Type':'application/octet-stream'},body:f})})},Promise.resolve());
+  }else{
+    var texto=$('#avTexto').value.trim();
+    if(!texto){setMsg('Escribe el texto antes de guardar.','err');$('#avSave').disabled=false;return}
+    if(API.on)p=api('/api/nota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({estado:estado,clase:AV.kind,titulo:titulo||CLN[AV.kind],texto:texto},base))});
+    else{S.avLocal.push(Object.assign({ruta:'local/'+Date.now(),titulo:titulo||CLN[AV.kind],clase:AV.kind,estado:estado,tipo:NOTAF[AV.kind],texto:texto,fecha:new Date().toISOString()},base));save();p=Promise.resolve()}
+  }
+  p.then(function(){
+    setMsg(API.on?'Guardado en '+$('#avPath').textContent:'Guardado solo en este navegador (sin servidor).','ok');
+    $('#avTitulo').value='';$('#avTexto').value='';$('#avDesc').value='';$('#fileIn').value='';setFiles([]);
+    loadAv();
+  }).catch(function(e){setMsg('No se pudo guardar: '+e.message,'err')}).then(function(){renderKind()});
+};
+
+function loadAv(){
+  var done=function(items){AV.items=items;renderBoard()};
+  if(API.on)api('/api/registro').then(function(r){done(r.items)}).catch(function(){done(S.avLocal)});
+  else done(S.avLocal);
+}
+function renderFilters(){
+  var f=[['all','Todos']].concat(Object.keys(ENTN).map(function(k){return [k,ENTN[k]]}));
+  $('#avFilters').innerHTML=f.map(function(x){return '<button class="chip" aria-pressed="'+(AV.filter===x[0])+'" data-f="'+x[0]+'">'+x[1]+'</button>'}).join('');
+  $$('#avFilters .chip').forEach(function(b){b.onclick=function(){AV.filter=b.dataset.f;renderBoard()}});
+}
+function renderBoard(){
+  renderFilters();
+  var q=AV.q.toLowerCase();
+  var list=AV.items.filter(function(i){return (AV.filter==='all'||i.entregable===AV.filter)&&(!q||(i.titulo+' '+(i.texto||'')+' '+(i.descripcion||'')).toLowerCase().indexOf(q)>-1)});
+  $('#avSummary').textContent=AV.items.length+' registros · '+AV.items.filter(function(i){return i.estado==='hecho'}).length+' definitivos · '+AV.items.filter(function(i){return i.estado==='discutido'}).length+' discutidos · '+AV.items.filter(function(i){return i.estado==='porhacer'}).length+' por hacer';
+  var order=['porhacer','discutido','hecho'];
+  $('#kan').innerHTML=order.map(function(est){
+    var cards=list.filter(function(i){return i.estado===est}).map(function(i){
+      var others=order.filter(function(o){return o!==est});
+      var body=i.texto?'<details><summary class="small">Ver texto</summary><pre>'+esc(i.texto)+'</pre></details>':(i.descripcion?'<div class="small muted">'+esc(i.descripcion)+'</div>':'');
+      return '<div class="acard"><div class="row" style="gap:6px"><span class="tag">'+CLN[i.clase]+'</span><span class="tag">'+esc(ENTN[i.entregable]||i.entregable||'General')+'</span>'+(i.responsable?'<span class="row" style="gap:3px">'+whoBadges(i.responsable==='ABC'?'ABC':i.responsable)+'</span>':'')+'</div>'+
+       '<h4>'+esc(i.titulo)+'</h4>'+body+
+       '<div class="small muted mono">'+esc(i.tipo||'')+' · '+new Date(i.fecha).toLocaleDateString('es-VE',{day:'numeric',month:'short'})+(i.tamano?' · '+sizeFmt(i.tamano):'')+'</div>'+
+       '<div class="acts">'+(API.on&&i.clase==='archivo'?'<a href="/f/'+encodeURI(i.ruta)+'" target="_blank" rel="noopener">Abrir</a>':'')+
+       (API.on?others.map(function(o){return '<button data-mv="'+esc(i.ruta)+'" data-to="'+o+'">→ '+ESTN[o]+'</button>'}).join(''):'')+
+       '<button class="del" data-del="'+esc(i.ruta)+'">Eliminar</button></div></div>';
+    }).join('');
+    return '<div class="kcol"><header><b>'+ESTN[est]+'</b><span class="tag">'+list.filter(function(i){return i.estado===est}).length+'</span></header><div class="small muted" style="padding:0 4px">'+ESTF[est]+'</div>'+(cards||'<div class="small muted" style="padding:8px 4px">Nada aquí todavía.</div>')+'</div>';
+  }).join('');
+  $$('#kan [data-mv]').forEach(function(b){b.onclick=function(){api('/api/mover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ruta:b.dataset.mv,estado:b.dataset.to})}).then(loadAv).catch(function(e){setMsg(e.message,'err')})}});
+  $$('#kan [data-del]').forEach(function(b){b.onclick=function(){
+    if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='¿Seguro? Se borra el archivo';setTimeout(function(){if(b.isConnected){b.dataset.armed='0';b.textContent='Eliminar'}},3500);return}
+    if(API.on)api('/api/borrar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ruta:b.dataset.del})}).then(loadAv).catch(function(e){setMsg(e.message,'err')});
+    else{S.avLocal=S.avLocal.filter(function(x){return x.ruta!==b.dataset.del});save();loadAv()}}});
+}
+$('#avSearch').oninput=function(){AV.q=this.value;renderBoard()};
+
+function setServer(on){
+  API.on=on;
+  $('#srvPill').className='pill'+(on?' on':'');
+  $('#srvTxt').textContent=on?'Guardando en la carpeta':'Sin servidor';
+  $('#srvPill').title=on?(API.info&&API.info.carpeta||''):'Abre iniciar.bat para guardar archivos en la carpeta NuestrosAvances';
+  $('#srvHint').innerHTML=on?'<b>Conectado.</b> Todo lo que registres en Nuestros avances se guarda al instante en <span class="mono">'+esc(API.info.carpeta)+'</span>, y el avance de tareas y rúbrica se guarda también ahí en <span class="mono">_estado-web.json</span>.':'<b>Sin servidor local.</b> Esta página no puede escribir en tu carpeta por sí sola. Haz doble clic en <span class="mono">iniciar.bat</span> (carpeta LuciRequsitos) y abre <span class="mono">http://localhost:4173</span>. Mientras tanto, las notas y el avance se guardan solo en este navegador y no se pueden subir archivos.';
+}
+
+/* ================= navegación ================= */
+var links=$$('#side a'),secs=links.map(function(a){return $(a.getAttribute('href'))});
+function spy(){var y=window.scrollY+120,cur=0;secs.forEach(function(s,i){if(s.offsetTop<=y)cur=i});links.forEach(function(a,i){a.classList.toggle('on',i===cur)})}
+window.addEventListener('scroll',spy,{passive:true});
+
+/* ================= arranque ================= */
+function boot(){
+  renderSys();renderTL();renderCats();renderTools();renderAreas();renderFag();renderClase();
+  checklist('#entry',ENTRY);checklist('#exit',EXIT);analyze();renderDef();
+  renderKind();renderMarket();renderProgress();renderPts();loadAv();spy();
+}
+var isHttp=location.protocol==='http:'||location.protocol==='https:';
+(isHttp?api('/api/ping'):Promise.reject(new Error('sin servidor'))).then(function(info){
+  API.info=info;setServer(true);
+  return api('/api/estado').then(function(st){if(st&&Object.keys(st).length){for(var k in st)S[k]=st[k]}})
+}).catch(function(){setServer(false)}).then(boot);
+})();
+</script>
+</body>
+</html>

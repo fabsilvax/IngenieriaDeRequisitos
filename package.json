@@ -1,0 +1,8 @@
+{
+  "name": "ingenieria-de-requisitos",
+  "version": "1.0.0",
+  "description": "Tablero Legal Tech Empresa 1: plan, entregas y avances de Ingeniería de Requisitos",
+  "private": true,
+  "scripts": { "start": "node servidor.js" },
+  "engines": { "node": ">=18" }
+}
