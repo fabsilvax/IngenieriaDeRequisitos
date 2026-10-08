@@ -943,6 +943,9 @@ $('#avSave').onclick=function(){
   var p;
   if(AV.kind==='archivo'){
     if(!AV.files.length){setMsg('Elige al menos un archivo.','err');$('#avSave').disabled=false;return}
+    var lim=API.info&&API.info.limiteBytes;
+    var grande=lim?AV.files.filter(function(f){return f.size>lim})[0]:null;
+    if(grande){setMsg(grande.name+' pesa '+sizeFmt(grande.size)+' y el máximo en esta versión es '+sizeFmt(lim)+'. Comprímelo o súbelo a mano a la carpeta.','err');$('#avSave').disabled=false;return}
     var desc=$('#avDesc').value.trim();
     p=AV.files.reduce(function(prev,f){return prev.then(function(){
       return api('/api/archivo',{method:'POST',headers:{'x-estado':estado,'x-nombre':encodeURIComponent(f.name),'x-meta':encodeURIComponent(JSON.stringify(Object.assign({titulo:AV.files.length===1&&titulo?titulo:f.name,descripcion:desc},base))),'Content-Type':'application/octet-stream'},body:f})})},Promise.resolve());
@@ -1001,7 +1004,7 @@ function setServer(on){
   $('#srvPill').className='pill'+(on?' on':'');
   $('#srvTxt').textContent=on?'Guardando en la carpeta':'Sin servidor';
   $('#srvPill').title=on?(API.info&&API.info.carpeta||''):'Abre iniciar.bat para guardar archivos en la carpeta NuestrosAvances';
-  $('#srvHint').innerHTML=on?'<b>Conectado.</b> Todo lo que registres en Nuestros avances se guarda al instante en <span class="mono">'+esc(API.info.carpeta)+'</span>, y el avance de tareas y rúbrica se guarda también ahí en <span class="mono">_estado-web.json</span>.':'<b>Sin servidor local.</b> Esta página no puede escribir en tu carpeta por sí sola. Haz doble clic en <span class="mono">iniciar.bat</span> (carpeta LuciRequsitos) y abre <span class="mono">http://localhost:4173</span>. Mientras tanto, las notas y el avance se guardan solo en este navegador y no se pueden subir archivos.';
+  $('#srvHint').innerHTML=on&&API.info.nube?'<b>Conectado a GitHub.</b> Cada registro se guarda como commit en <span class="mono">'+esc(API.info.carpeta)+'</span> (archivos de hasta '+sizeFmt(API.info.limiteBytes)+'). Para verlos en tu PC: <span class="mono">git fetch origin avances</span> y luego <span class="mono">git checkout origin/avances -- NuestrosAvances</span>.':on?'<b>Conectado.</b> Todo lo que registres en Nuestros avances se guarda al instante en <span class="mono">'+esc(API.info.carpeta)+'</span>, y el avance de tareas y rúbrica se guarda también ahí en <span class="mono">_estado-web.json</span>.':'<b>Sin servidor local.</b> Esta página no puede escribir en tu carpeta por sí sola. Haz doble clic en <span class="mono">iniciar.bat</span> (carpeta LuciRequsitos) y abre <span class="mono">http://localhost:4173</span>. Si lo ves en Vercel, falta la variable <span class="mono">GH_TOKEN</span> (ver README). Mientras tanto, las notas y el avance se guardan solo en este navegador y no se pueden subir archivos.';
 }
 
 /* ================= navegación ================= */
